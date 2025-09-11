@@ -1,14 +1,14 @@
-name: Build BuzzClock
+name: Build BuzzClock (No Key)
 
 on:
-  workflow_dispatch:   # run manually
-  push:                # or whenever you push code
+  workflow_dispatch:
+  push:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4   # also updated to v4
+      - uses: actions/checkout@v4
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -18,22 +18,18 @@ jobs:
 
       - name: Download Connect IQ SDK
         run: |
-          wget https://developer.garmin.com/downloads/connect-iq/sdk/connectiq-sdk-lin-4.2.5.zip -O sdk.zip
+          wget https://developer.garmin.com/downloads/connect-iq/sdk/connectiq-sdk-lin-8.2.2.zip -O sdk.zip
           unzip sdk.zip -d $HOME/ciq-sdk
 
-      - name: Decode developer key
-        run: |
-          echo "${{ secrets.DEVELOPER_KEY_B64 }}" | base64 -d > developer_key.der
-
-      - name: Build PRG
+      - name: Build PRG with temporary key
         run: |
           $HOME/ciq-sdk/bin/monkeyc \
             -o BuzzClock.prg \
             -f manifest.xml \
-            -y developer_key.der \
-            -d fenix5
+            -d fenix5 \
+            --no-key
 
-      - name: Upload PRG
+      - name: Upload PRG artifact
         uses: actions/upload-artifact@v4
         with:
           name: BuzzClock-prg
