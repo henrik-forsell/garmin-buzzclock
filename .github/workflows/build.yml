@@ -1,4 +1,4 @@
-name: Build BuzzClock (Signed)
+name: Build BuzzClock (Signed - raw key)
 
 on:
   workflow_dispatch:
@@ -14,8 +14,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Write developer key
+        shell: bash
         run: |
-          echo "${{ secrets.GARMIN_DEVELOPER_KEY }}" | base64 -d > developer_key.der
+          # Secrets can contain line breaks — use printf instead of echo
+          printf "%s" "${{ secrets.GARMIN_DEVELOPER_KEY }}" > developer_key.der
 
       - name: Build PRG with developer key
         run: |
@@ -28,5 +30,5 @@ jobs:
       - name: Upload PRG artifact
         uses: actions/upload-artifact@v4
         with:
-          name: BuzzClock
+          name: BuzzClock-prg
           path: BuzzClock.prg
