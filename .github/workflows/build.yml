@@ -15,6 +15,12 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
+      - name: Find monkeyc
+        run: |
+          echo "Searching for monkeyc..."
+          find / -name monkeyc -type f 2>/dev/null || true
+          ls -lR /connectiq || true
+
       - name: Write developer key
         run: |
           printf "%s" "${GARMIN_DEVELOPER_KEY}" > developer_key.der
@@ -24,7 +30,9 @@ jobs:
 
       - name: Build PRG
         run: |
-          /connectiq/bin/monkeyc \
+          MONKEYC=$(find / -name monkeyc -type f | head -n 1)
+          echo "Using $MONKEYC"
+          $MONKEYC \
             -o BuzzClock.prg \
             -f manifest.xml \
             -d fenix5 \
