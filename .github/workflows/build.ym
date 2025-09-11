@@ -1,0 +1,30 @@
+name: Build .prg (GitHub Actions)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Pull connectiq-tester image
+        run: docker pull ghcr.io/matco/connectiq-tester:latest
+
+      - name: Build PRG (docker)
+        run: |
+          # mount repository into container; container's entrypoint will run a build for the given device
+          docker run --rm -v "${{ github.workspace }}":/app -w /app ghcr.io/matco/connectiq-tester:latest fenix5
+
+      - name: List build output
+        run: ls -la build || true
+
+      - name: Upload PRG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prg
+          path: build/*.prg
