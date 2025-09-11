@@ -1,14 +1,32 @@
-name: Garmin CIQ Buildon:push:branches:- mainpull_request:branches:- mainjobs:build_and_test:runs-on: ubuntu-latestcontainer:# Use the specific Docker image that contains the Garmin Connect IQ SDK and tools.# This handles all the dependencies and environment setup.image: ghcr.io/blackshadev/garmin-connectiq-tools:8.2.3-2steps:- name: Checkout repositoryuses: actions/checkout@v4with:# This is important for CI/CD to make sure the workspace is clean.submodules: true  - name: Build project
-    # Assuming your project has a source/ directory, this command will
-    # compile the Monkey C code. Adjust the path and command as needed.
-    run: monkeyc -f source/BuzzClock.mc -y ${{ secrets.GARMIN_DEVELOPER_KEY }}
+name: Build BuzzClock (Signed)
 
-  - name: Run tests (optional)
-    # This step is optional and assumes you have a test setup.
-    # It's a placeholder for running your test suite with monkeydo.
-    run: monkeydo -t
+on:
+  workflow_dispatch:
+  push:
 
-  - name: Create release artifact
-    # This step packages your app into a .prg file for release.
-    # The output path can be customized based on your needs.
-    run: monkeyc -f source/BuzzClock.mc -o bin/buzzclock.prg -y ${{ secrets.GARMIN_DEVELOPER_KEY }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/blackshadev/garmin-connectiq-tools:8.2.3-2
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write developer key
+        run: |
+          echo "${{ secrets.GARMIN_DEVELOPER_KEY }}" | base64 -d > developer_key.der
+
+      - name: Build PRG with developer key
+        run: |
+          monkeyc \
+            -o BuzzClock.prg \
+            -f manifest.xml \
+            -d fenix5 \
+            -y developer_key.der
+
+      - name: Upload PRG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BuzzClock-prg
+          path: BuzzClock.prg
