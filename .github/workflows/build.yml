@@ -9,17 +9,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/blackshadev/garmin-connectiq-tools:8.2.3-2
+      image: ghcr.io/matco/connectiq-tester:latest
 
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
-
-      - name: Find monkeyc
-        run: |
-          echo "Searching for monkeyc..."
-          find / -name monkeyc -type f 2>/dev/null || true
-          ls -lR /connectiq || true
 
       - name: Write developer key
         run: |
@@ -30,9 +24,7 @@ jobs:
 
       - name: Build PRG
         run: |
-          MONKEYC=$(find / -name monkeyc -type f | head -n 1)
-          echo "Using $MONKEYC"
-          $MONKEYC \
+          monkeyc \
             -o BuzzClock.prg \
             -f manifest.xml \
             -d fenix5 \
