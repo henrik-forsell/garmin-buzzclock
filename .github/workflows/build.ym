@@ -1,30 +1,40 @@
-name: Build .prg (GitHub Actions)
+name: Build BuzzClock
 
 on:
-  workflow_dispatch:
-  push:
-    branches: [ "main" ]
+  workflow_dispatch:   # run manually
+  push:                # or whenever you push code
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-      - name: Pull connectiq-tester image
-        run: docker pull ghcr.io/matco/connectiq-tester:latest
-
-      - name: Build PRG (docker)
-        run: |
-          # mount repository into container; container's entrypoint will run a build for the given device
-          docker run --rm -v "${{ github.workspace }}":/app -w /app ghcr.io/matco/connectiq-tester:latest fenix5
-
-      - name: List build output
-        run: ls -la build || true
-
-      - name: Upload PRG artifact
-        uses: actions/upload-artifact@v4
+      - name: Set up Java
+        uses: actions/setup-java@v3
         with:
-          name: prg
-          path: build/*.prg
+          distribution: temurin
+          java-version: 11
+
+      - name: Download Connect IQ SDK
+        run: |
+          wget https://developer.garmin.com/downloads/connect-iq/sdk/connectiq-sdk-lin-4.2.5.zip -O sdk.zip
+          unzip sdk.zip -d $HOME/ciq-sdk
+
+      - name: Decode developer key
+        run: |
+          echo "${{ secrets.DEVELOPER_KEY_B64 }}" | base64 -d > developer_key.der
+
+      - name: Build PRG
+        run: |
+          $HOME/ciq-sdk/bin/monkeyc \
+            -o BuzzClock.prg \
+            -f manifest.xml \
+            -y developer_key.der \
+            -d fenix5
+
+      - name: Upload PRG
+        uses: actions/upload-artifact@v3
+        with:
+          name: BuzzClock-prg
+          path: BuzzClock.prg
