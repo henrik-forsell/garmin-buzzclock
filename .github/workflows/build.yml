@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Write developer key
-        shell: bash
+        shell: sh
         run: |
           # Secrets can contain line breaks — use printf instead of echo
           printf "%s" "${{ secrets.GARMIN_DEVELOPER_KEY }}" > developer_key.der
