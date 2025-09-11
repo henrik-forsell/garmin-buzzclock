@@ -1,0 +1,45 @@
+name: Garmin Connect IQ Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Download and install Garmin Connect IQ SDK
+        run: |
+          wget https://developer.garmin.com/downloads/connect-iq/sdk/connectiq-sdk-lin-4.1.6-2023-11-28-f1c5c64b6.zip -O garmin-sdk.zip
+          unzip garmin-sdk.zip -d garmin-sdk
+          echo "GARMIN_SDK_HOME=$(pwd)/garmin-sdk" >> $GITHUB_ENV
+          echo "PATH=$GARMIN_SDK_HOME/bin:$PATH" >> $GITHUB_ENV
+
+      - name: Save Developer Key from Secret to file
+        run: |
+          echo "${{ secrets.GARMIN_DEVELOPER_KEY }}" > private_key.der
+        shell: bash
+        env:
+          GARMIN_DEVELOPER_KEY: ${{ secrets.GARMIN_DEVELOPER_KEY }}
+
+      - name: Build Garmin app
+        run: |
+          # Replace 'YOUR_APP_NAME' and 'your_device' with your actual values
+          monkeyc -f monkey.jungle -o bin/BuzzClock.prg -y private_key.der -d fenix5 -w
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: garmin-app-artifact
+          path: bin/BuzzClock.prg
