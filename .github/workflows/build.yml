@@ -1,8 +1,9 @@
-name: Build BuzzClock (Signed - raw key)
+name: Build Garmin PRG
 
 on:
-  workflow_dispatch:
   push:
+    branches: [ "main" ]
+  pull_request:
 
 jobs:
   build:
@@ -11,28 +12,26 @@ jobs:
       image: ghcr.io/blackshadev/garmin-connectiq-tools:8.2.3-2
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout source
+        uses: actions/checkout@v4
 
       - name: Write developer key
+        run: |
+          printf "%s" "${GARMIN_DEVELOPER_KEY}" > developer_key.der
         shell: sh
-        run: |
-          printf "%s" "${{ secrets.GARMIN_DEVELOPER_KEY }}" > developer_key.der
+        env:
+          GARMIN_DEVELOPER_KEY: ${{ secrets.GARMIN_DEVELOPER_KEY }}
 
-      - name: Check tool versions
+      - name: Build PRG
         run: |
-          which monkeyc
-          monkeyc --version || true
-
-      - name: Build PRG with developer key
-        run: |
-          monkeyc \
+          /connectiq/bin/monkeyc \
             -o BuzzClock.prg \
             -f manifest.xml \
             -d fenix5 \
             -y developer_key.der
 
-      - name: Upload PRG artifact
+      - name: Upload PRG
         uses: actions/upload-artifact@v4
         with:
-          name: BuzzClock-prg
+          name: BuzzClock
           path: BuzzClock.prg
