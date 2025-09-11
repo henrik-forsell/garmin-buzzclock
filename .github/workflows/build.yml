@@ -1,4 +1,4 @@
-steps:
+name: Garmin CIQ Buildon:push:branches:- mainpull_request:branches:- mainjobs:build_and_test:runs-on: ubuntu-latestcontainer:# Use the specific Docker image that contains the Garmin Connect IQ SDK and tools.# This handles all the dependencies and environment setup.image: ghcr.io/blackshadev/garmin-connectiq-tools:8.2.3-2steps:
   - name: Checkout repository
     uses: actions/checkout@v4
     with:
