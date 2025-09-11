@@ -28,5 +28,5 @@ jobs:
       - name: Upload PRG artifact
         uses: actions/upload-artifact@v4
         with:
-          name: BuzzClock-prg
+          name: BuzzClock
           path: BuzzClock.prg
