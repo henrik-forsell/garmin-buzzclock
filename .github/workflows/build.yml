@@ -16,12 +16,16 @@ jobs:
       - name: Write developer key
         shell: sh
         run: |
-          # Write secret into key file
           printf "%s" "${{ secrets.GARMIN_DEVELOPER_KEY }}" > developer_key.der
+
+      - name: Check tool versions
+        run: |
+          which monkeyc
+          monkeyc --version || true
 
       - name: Build PRG with developer key
         run: |
-          /opt/connectiq/bin/monkeyc \
+          monkeyc \
             -o BuzzClock.prg \
             -f manifest.xml \
             -d fenix5 \
