@@ -16,12 +16,12 @@ jobs:
       - name: Write developer key
         shell: sh
         run: |
-          # Secrets can contain line breaks — use printf instead of echo
+          # Write secret into key file
           printf "%s" "${{ secrets.GARMIN_DEVELOPER_KEY }}" > developer_key.der
 
       - name: Build PRG with developer key
         run: |
-          monkeyc \
+          /opt/connectiq/bin/monkeyc \
             -o BuzzClock.prg \
             -f manifest.xml \
             -d fenix5 \
