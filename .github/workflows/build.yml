@@ -1,45 +1,21 @@
-name: Garmin Connect IQ Build
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
+    with:
+      # This is important for CI/CD to make sure the workspace is clean.
+      submodules: true
 
-on:
-  push:
-    branches:
-      - main
+  - name: Build project
+    # Assuming your project has a source/ directory, this command will
+    # compile the Monkey C code. Adjust the path and command as needed.
+    run: monkeyc -f source/buzz.jungle -y buzz.der
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+  - name: Run tests (optional)
+    # This step is optional and assumes you have a test setup.
+    # It's a placeholder for running your test suite with monkeydo.
+    run: monkeydo -t
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Download and install Garmin Connect IQ SDK
-        run: |
-          wget https://developer.garmin.com/downloads/connect-iq/sdk/connectiq-sdk-lin-4.1.6-2023-11-28-f1c5c64b6.zip -O garmin-sdk.zip
-          unzip garmin-sdk.zip -d garmin-sdk
-          echo "GARMIN_SDK_HOME=$(pwd)/garmin-sdk" >> $GITHUB_ENV
-          echo "PATH=$GARMIN_SDK_HOME/bin:$PATH" >> $GITHUB_ENV
-
-      - name: Save Developer Key from Secret to file
-        run: |
-          echo "${{ secrets.GARMIN_DEVELOPER_KEY }}" > private_key.der
-        shell: bash
-        env:
-          GARMIN_DEVELOPER_KEY: ${{ secrets.GARMIN_DEVELOPER_KEY }}
-
-      - name: Build Garmin app
-        run: |
-          # Replace 'YOUR_APP_NAME' and 'your_device' with your actual values
-          monkeyc -f monkey.jungle -o bin/BuzzClock.prg -y private_key.der -d fenix5 -w
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: garmin-app-artifact
-          path: bin/BuzzClock.prg
+  - name: Create release artifact
+    # This step packages your app into a .prg file for release.
+    # The output path can be customized based on your needs.
+    run: monkeyc -f source/buzz.jungle -o bin/buzzclock.prg -y buzz.der
