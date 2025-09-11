@@ -1,7 +1,7 @@
 name: Garmin CIQ Buildon:push:branches:- mainpull_request:branches:- mainjobs:build_and_test:runs-on: ubuntu-latestcontainer:# Use the specific Docker image that contains the Garmin Connect IQ SDK and tools.# This handles all the dependencies and environment setup.image: ghcr.io/blackshadev/garmin-connectiq-tools:8.2.3-2steps:- name: Checkout repositoryuses: actions/checkout@v4with:# This is important for CI/CD to make sure the workspace is clean.submodules: true  - name: Build project
     # Assuming your project has a source/ directory, this command will
     # compile the Monkey C code. Adjust the path and command as needed.
-    run: monkeyc -f source/monkey.jungle -y buzz.der
+    run: monkeyc -f source/BuzzClock.mc -y ${{ secrets.GARMIN_DEVELOPER_KEY }}
 
   - name: Run tests (optional)
     # This step is optional and assumes you have a test setup.
@@ -11,4 +11,4 @@ name: Garmin CIQ Buildon:push:branches:- mainpull_request:branches:- mainjobs:bu
   - name: Create release artifact
     # This step packages your app into a .prg file for release.
     # The output path can be customized based on your needs.
-    run: monkeyc -f source/monkey.jungle -o bin/buzzclock.prg -y buzz.der
+    run: monkeyc -f source/BuzzClock.mc -o bin/buzzclock.prg -y ${{ secrets.GARMIN_DEVELOPER_KEY }}
