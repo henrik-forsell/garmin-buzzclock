@@ -10,11 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    container:
-      # This Docker image is specifically designed for Garmin Connect IQ CI/CD.
-      # It contains the SDK and all necessary dependencies, eliminating build issues.
-      image: ghcr.io/blackshadev/garmin-connectiq-sdk:latest
+    runs-on: ubuntu-20.04
 
     steps:
       - name: Checkout repository
@@ -22,9 +18,40 @@ jobs:
         with:
           submodules: true
     
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+    
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          # Install all necessary dependencies for the Garmin SDK Manager.
+          # libwebkit2gtk-4.0-37 is available on Ubuntu 20.04.
+          sudo apt-get install -y unzip wget xvfb libwebkit2gtk-4.0-37 libgtk-3-0
+          
+      - name: Download and unzip SDK Manager
+        run: |
+          wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip -O connectiq-sdk-manager-linux.zip
+          unzip connectiq-sdk-manager-linux.zip -d connectiq-sdk-manager
+    
+      - name: Install latest SDK and devices
+        env:
+          CONNECTIQ_ACCEPT_LICENSE: true
+        run: |
+          # Use xvfb-run to provide a virtual display for the SDK Manager
+          xvfb-run connectiq-sdk-manager/bin/sdkmanager --update
+    
+      - name: Set SDK path
+        run: |
+          # Find the path to the latest SDK that was installed by the SDK Manager
+          SDK_PATH=$(find ~/.Garmin/ConnectIQ/Sdks -maxdepth 1 -type d -printf '%T@\n' | sort -nr | head -n 1 | xargs -I{} find ~/.Garmin/ConnectIQ/Sdks -type d -printf '%T@ %p\n' | grep '^{}' | cut -d' ' -f2)
+          echo "GARMIN_SDK_HOME=$SDK_PATH" >> $GITHUB_ENV
+          echo "$GARMIN_SDK_HOME/bin" >> $GITHUB_PATH
+    
       - name: Compile the project
         run: |
-          # The Monkey C compiler is now available in the container's PATH.
           # We need to make sure to use a key for signing.
           echo "${{ secrets.GARMIN_DEVELOPER_KEY }}" > developer_key.der
           
