@@ -20,13 +20,9 @@ jobs:
     
       - name: Install Connect IQ SDK
         run: |
-          # Add the Bionic repository and its public key
-          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32
-          echo "deb http://cz.archive.ubuntu.com/ubuntu bionic main universe" | sudo tee -a /etc/apt/sources.list
-          
           # Install required dependencies for the SDK Manager
           sudo apt-get update
-          sudo apt-get install -y libsecret-1-0 libwebkit2gtk-4.0-37 libwebkit2gtk-3.0-0
+          sudo apt-get install -y libsecret-1-0 libwebkit2gtk-4.1-0
           
           # Download and install the SDK Manager
           curl -L -o sdk-manager.zip https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip
@@ -45,4 +41,3 @@ jobs:
     
       - name: Build Connect IQ project
         run: monkeyc -r -f monkey.jungle -y ${{ secrets.GARMIN_DEVELOPER_KEY }} -o build/BuzzClock.prg
-
