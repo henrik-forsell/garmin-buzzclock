@@ -22,7 +22,7 @@ jobs:
         run: |
           # Install required dependencies for the SDK Manager
           sudo apt-get update
-          sudo apt-get install -y libsecret-1-0 libwebkit2gtk-4.1-0
+          sudo apt-get install -y libsecret-1-0 libwebkit2gtk-4.1-0 xvfb
           
           # Create symbolic links to trick the sdkmanager into finding the older libraries
           sudo ln -s /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
@@ -36,9 +36,9 @@ jobs:
           mkdir connectiq-sdk-manager
           unzip sdk-manager.zip -d connectiq-sdk-manager
           
-          # Use the SDK Manager to install a specific SDK and device files
-          ./connectiq-sdk-manager/bin/sdkmanager --acceptLicense
-          ./connectiq-sdk-manager/bin/sdkmanager --install --sdk-version 5.0.0 --device-api-version 4.0.0 --all-devices
+          # Use the SDK Manager to install a specific SDK and device files with xvfb-run
+          xvfb-run ./connectiq-sdk-manager/bin/sdkmanager --acceptLicense
+          xvfb-run ./connectiq-sdk-manager/bin/sdkmanager --install --sdk-version 5.0.0 --device-api-version 4.0.0 --all-devices
     
           # Set up the path to the monkeyc compiler
           echo "CIQ_SDK_PATH=$HOME/.Garmin/ConnectIQ/Sdks/connectiq-sdk-5.0.0" >> $GITHUB_ENV
