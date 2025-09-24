@@ -22,7 +22,10 @@ jobs:
         run: |
           # Download and install the SDK Manager
           curl -L -o sdk-manager.zip https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip
-          unzip sdk-manager.zip
+          
+          # Create the directory for the SDK Manager and extract the files into it
+          mkdir connectiq-sdk-manager
+          unzip sdk-manager.zip -d connectiq-sdk-manager
           
           # Use the SDK Manager to install a specific SDK and device files
           ./connectiq-sdk-manager/bin/sdkmanager --acceptLicense
