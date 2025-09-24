@@ -16,15 +16,6 @@ jobs:
         with:
           submodules: true
 
-      - name: Build and release ConnectIQ project
-        uses: connect-iq/mc-build-action@v1
-        with:
-          # Your Garmin developer key is stored as a GitHub secret for security.
-          developer-key: ${{ secrets.GARMIN_DEVELOPER_KEY }}
-          # The path to your Connect IQ project.
-          project-path: '.'
-          # The source file for your main application.
-          source: 'source/BuzzClock.mc'
       - name: Build Connect IQ project using Docker
         run: |
           docker run --rm \
