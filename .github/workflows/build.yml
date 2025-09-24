@@ -4,16 +4,17 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/waterkip/connectiq-sdk-docker:8.2.3-1
 
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Write developer key
         run: |
@@ -21,17 +22,19 @@ jobs:
         shell: sh
         env:
           GARMIN_DEVELOPER_KEY: ${{ secrets.GARMIN_DEVELOPER_KEY }}
-
-      - name: Build PRG
-        run: |
-          monkeyc \
-            -o BuzzClock.prg \
-            -f manifest.xml \
-            -d fenix5 \
-            -y developer_key.der
-
-      - name: Upload PRG
-        uses: actions/upload-artifact@v4
+      
+      - name: Build ConnectIQ project
+        # This action is designed to handle the build process, including
+        # fetching the necessary SDK and dependencies.
+        uses: littledev/garmin-connectiq-build-action@v1
         with:
-          name: BuzzClock
-          path: BuzzClock.prg
+          source-file: 'source/BuzzClock.mc'
+          developer-key: ${{ secrets.GARMIN_DEVELOPER_KEY }}
+      
+      - name: Create release artifact
+        # This action handles the final packaging of the .prg file.
+        uses: littledev/garmin-connectiq-release-action@v1
+        with:
+          source-file: 'source/BuzzClock.mc'
+          developer-key: ${{ secrets.GARMIN_DEVELOPER_KEY }}
+          output-file: 'bin/buzzclock.prg'
