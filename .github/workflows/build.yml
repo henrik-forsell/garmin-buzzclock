@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/waterkip/connectiq-sdk-docker:latest
+      image: ghcr.io/waterkip/connectiq-sdk-docker:8.2.3-1
 
     steps:
       - name: Checkout source
