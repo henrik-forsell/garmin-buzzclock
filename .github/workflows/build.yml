@@ -17,9 +17,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-
+    
       - name: Install Connect IQ SDK
         run: |
+          # Add repository for older dependencies
+          echo "deb http://cz.archive.ubuntu.com/ubuntu bionic main universe" | sudo tee -a /etc/apt/sources.list
+          
           # Install required dependencies for the SDK Manager
           sudo apt-get update
           sudo apt-get install -y libsecret-1-0 libwebkit2gtk-4.0-37 libwebkit2gtk-3.0-0
