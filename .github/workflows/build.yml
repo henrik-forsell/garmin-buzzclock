@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -31,6 +31,12 @@ jobs:
           sudo apt-get install -y unzip wget libwebkit2gtk-4.1-0 xvfb
           wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip -O connectiq-sdk-manager-linux.zip
           unzip connectiq-sdk-manager-linux.zip -d connectiq-sdk-manager
+    
+      - name: Create symbolic link for WebKit library
+        run: |
+          # The SDK Manager requires an older version of the WebKit library.
+          # We create a symbolic link to point it to the newer, installed version.
+          sudo ln -s /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.0.so /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
       
       - name: Install latest SDK and devices
         env:
