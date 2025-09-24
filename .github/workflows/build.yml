@@ -17,7 +17,6 @@ jobs:
           submodules: true
 
       - name: Build Connect IQ project using Docker
-        run: docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace kalemena/connectiq:latest monkeyc -r -f monkey.jungle -y ${{ secrets.GARMIN_DEVELOPER_KEY }} -o build/BuzzClock.prg
-
+        run: docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace kalemena/connectiq:latest monkeyc -o build/BuzzClock.prg -r -f monkey.jungle -y ${{ secrets.GARMIN_DEVELOPER_KEY }}
 
 
