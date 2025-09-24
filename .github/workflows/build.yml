@@ -11,52 +11,20 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+    container:
+      # This Docker image is specifically designed for Garmin Connect IQ CI/CD.
+      # It contains the SDK and all necessary dependencies, eliminating build issues.
+      image: ghcr.io/blackshadev/garmin-connectiq-sdk:latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: true
     
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-    
-      - name: Install dependencies and unzip SDK Manager
-        run: |
-          sudo apt-get update
-          # Install all necessary dependencies for the Garmin SDK Manager
-          sudo apt-get install -y unzip wget xvfb libwebkit2gtk-4.1-0 libgtk-3-dev libayatana-appindicator3-1 at-spi2-core
-          wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip -O connectiq-sdk-manager-linux.zip
-          unzip connectiq-sdk-manager-linux.zip -d connectiq-sdk-manager
-    
-      - name: Create symbolic link for WebKit library
-        run: |
-          # The SDK Manager requires an older version of the WebKit library.
-          # We create a symbolic link to point it to the newer, installed version.
-          sudo ln -s /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.0.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
-      
-      - name: Update linker run-time bindings
-        run: sudo ldconfig
-      
-      - name: Install latest SDK and devices
-        env:
-          CONNECTIQ_ACCEPT_LICENSE: true
-        run: |
-          # Use xvfb-run to provide a virtual display for the SDK Manager
-          xvfb-run connectiq-sdk-manager/bin/sdkmanager --update
-          
-      - name: Set SDK path
-        run: |
-          # Find the path to the latest SDK that was installed by the SDK Manager
-          SDK_PATH=$(find ~/.Garmin/ConnectIQ/Sdks -maxdepth 1 -type d -printf '%T@\n' | sort -nr | head -n 1 | xargs -I{} find ~/.Garmin/ConnectIQ/Sdks -type d -printf '%T@ %p\n' | grep '^{}' | cut -d' ' -f2)
-          echo "GARMIN_SDK_HOME=$SDK_PATH" >> $GITHUB_ENV
-          echo "$GARMIN_SDK_HOME/bin" >> $GITHUB_PATH
-    
       - name: Compile the project
         run: |
+          # The Monkey C compiler is now available in the container's PATH.
           # We need to make sure to use a key for signing.
           echo "${{ secrets.GARMIN_DEVELOPER_KEY }}" > developer_key.der
           
