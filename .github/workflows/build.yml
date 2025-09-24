@@ -15,16 +15,42 @@ jobs:
       # Use a pre-built Docker image with the Garmin Connect IQ SDK and tools.
       # This image provides a stable environment and avoids all GUI-related issues.
       image: ghcr.io/blackshadev/garmin-connectiq-tools:8.2.3-2-ubuntu
-  
+      
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: true
     
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+    
+      - name: Install dependencies and unzip SDK Manager
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip wget libwebkit2gtk-4.0-37
+          wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip -O connectiq-sdk-manager-linux.zip
+          unzip connectiq-sdk-manager-linux.zip -d connectiq-sdk-manager
+      
+      - name: Install latest SDK and devices
+        env:
+          CONNECTIQ_ACCEPT_LICENSE: true
+        run: |
+          # Use the sdkmanager to install the latest stable SDK and devices.
+          connectiq-sdk-manager/bin/sdkmanager --update
+          
+      - name: Set SDK path
+        run: |
+          # Find the path to the latest SDK that was installed by the SDK Manager
+          SDK_PATH=$(find ~/.Garmin/ConnectIQ/Sdks -maxdepth 1 -type d -printf '%T@\n' | sort -nr | head -n 1 | xargs -I{} find ~/.Garmin/ConnectIQ/Sdks -type d -printf '%T@ %p\n' | grep '^{}' | cut -d' ' -f2)
+          echo "GARMIN_SDK_HOME=$SDK_PATH" >> $GITHUB_ENV
+          echo "$GARMIN_SDK_HOME/bin" >> $GITHUB_PATH
+    
       - name: Compile the project
         run: |
-          # The Monkey C compiler is available in the container's PATH.
           # We need to make sure to use a key for signing.
           echo "${{ secrets.GARMIN_DEVELOPER_KEY }}" > developer_key.der
           
