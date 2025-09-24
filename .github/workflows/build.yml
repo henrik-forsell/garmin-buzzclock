@@ -11,49 +11,28 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: true
+      container:
+      # Use a pre-built Docker image with the Garmin Connect IQ SDK and tools.
+      # This image provides a stable environment and avoids all GUI-related issues.
+      image: ghcr.io/blackshadev/garmin-connectiq-tools:8.2.3-2
 
-      - name: Install Connect IQ SDK
-        env:
-          CONNECTIQ_ACCEPT_LICENSE: true
-        run: |
-          # Install required dependencies for the SDK Manager
-          sudo apt-get update
-          sudo apt-get install -y libsecret-1-0 libwebkit2gtk-4.1-0 libsoup-3.0-0 libjavascriptcoregtk-4.1-0 libgtk-3-0 adwaita-icon-theme xvfb
-          
-          # Create symbolic links to trick the sdkmanager into finding the older libraries
-          sudo ln -s /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
-          sudo ln -s /usr/lib/x86_64-linux-gnu/libsoup-3.0.so.0 /usr/lib/x86_64-linux-gnu/libsoup-2.4.so.1
-          sudo ln -s /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so.18
-          
-          # Download and install the SDK Manager
-          wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip -O sdk-manager.zip
-          
-          # Create the directory for the SDK Manager and extract the files into it
-          mkdir connectiq-sdk-manager
-          unzip sdk-manager.zip -d connectiq-sdk-manager
-          
-          # Use the SDK Manager to install the latest SDK and devices with xvfb-run
-          xvfb-run --auto-servernum ./connectiq-sdk-manager/bin/sdkmanager --update --licenses accept
-          
-          # Set up the path to the monkeyc compiler
-          echo "CIQ_SDK_PATH=$HOME/.Garmin/ConnectIQ/Sdks/connectiq-sdk-5.0.0" >> $GITHUB_ENV
-          echo "$HOME/.Garmin/ConnectIQ/Sdks/connectiq-sdk-5.0.0/bin" >> $GITHUB_PATH
-    
-      - name: Compile the project
-        run: |
-          # We need to make sure to use a key for signing.
-          echo "${{ secrets.GARMIN_DEVELOPER_KEY }}" > developer_key.der
-          
-          # Build the project using the Monkey C compiler
-          monkeyc -r -f monkey.jungle -y developer_key.der -o build/BuzzClock.prg
-    
-      - name: Upload compiled app
-        uses: actions/upload-artifact@v4
-        with:
-          name: garmin-app
-          path: build/BuzzClock.prg
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+  
+    - name: Compile the project
+      run: |
+        # The Monkey C compiler is available in the container's PATH.
+        # We need to make sure to use a key for signing.
+        echo "${{ secrets.GARMIN_DEVELOPER_KEY }}" > developer_key.der
+        
+        # Build the project using the Monkey C compiler
+        monkeyc -r -f monkey.jungle -y developer_key.der -o build/BuzzClock.prg
+        
+    - name: Upload compiled app
+      uses: actions/upload-artifact@v4
+      with:
+        name: garmin-app
+        path: build/BuzzClock.prg
