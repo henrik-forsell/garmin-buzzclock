@@ -16,25 +16,13 @@ jobs:
         with:
           submodules: true
 
-      - name: Write developer key
-        run: |
-          printf "%s" "${GARMIN_DEVELOPER_KEY}" > developer_key.der
-        shell: sh
-        env:
-          GARMIN_DEVELOPER_KEY: ${{ secrets.GARMIN_DEVELOPER_KEY }}
-      
-      - name: Build ConnectIQ project
-        # This action is designed to handle the build process, including
-        # fetching the necessary SDK and dependencies.
-        uses: littledev/garmin-connectiq-build-action@v1
+      - name: Build and release ConnectIQ project
+        uses: garmin-ci/garmin-ci-action@v1
         with:
-          source-file: 'source/BuzzClock.mc'
+          # Your Garmin developer key is stored as a GitHub secret for security.
           developer-key: ${{ secrets.GARMIN_DEVELOPER_KEY }}
+          # The path to your Connect IQ project.
+          project-path: '.'
+          # The source file for your main application.
+          source: 'source/BuzzClock.mc'
       
-      - name: Create release artifact
-        # This action handles the final packaging of the .prg file.
-        uses: littledev/garmin-connectiq-release-action@v1
-        with:
-          source-file: 'source/BuzzClock.mc'
-          developer-key: ${{ secrets.GARMIN_DEVELOPER_KEY }}
-          output-file: 'bin/buzzclock.prg'
