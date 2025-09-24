@@ -25,4 +25,12 @@ jobs:
           project-path: '.'
           # The source file for your main application.
           source: 'source/BuzzClock.mc'
+      - name: Build Connect IQ project using Docker
+        run: |
+          docker run --rm \
+          -v ${{ github.workspace }}:/workspace \
+          -w /workspace \
+          kalemena/connectiq:latest \
+          /bin/bash -c "monkeyc -f monkey.jungle -y ${{ secrets.GARMIN_DEVELOPER_KEY }} -o build/BuzzClock.prg"
+
       
