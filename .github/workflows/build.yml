@@ -18,5 +18,15 @@ jobs:
         with:
           submodules: true
 
-      - name: Build Connect IQ project using Docker
-        run: docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace kalemena/connectiq:latest monkeyc -r -f monkey.jungle -y ${{ secrets.GARMIN_DEVELOPER_KEY }} -o build/BuzzClock.prg
+      - name: Install Connect IQ SDK
+        run: |
+          # Download and extract the latest Connect IQ SDK for Linux
+          curl -L -o connectiq-sdk.zip https://developer.garmin.com/downloads/connect-iq/sdk-manager.zip
+          unzip connectiq-sdk.zip
+          
+          # Set up the path to the monkeyc compiler
+          echo "CIQ_SDK_PATH=$GITHUB_WORKSPACE/connectiq-sdk/bin" >> $GITHUB_ENV
+          echo "$GITHUB_WORKSPACE/connectiq-sdk/bin" >> $GITHUB_PATH
+  
+      - name: Build Connect IQ project
+        run: monkeyc -r -f monkey.jungle -y ${{ secrets.GARMIN_DEVELOPER_KEY }} -o build/BuzzClock.prg
