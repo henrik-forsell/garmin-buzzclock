@@ -11,10 +11,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      # Use a pre-built Docker image with the Garmin Connect IQ SDK and tools.
-      # This image provides a stable environment and avoids all GUI-related issues.
-      image: ghcr.io/blackshadev/garmin-connectiq-tools:8.2.3-2-ubuntu
       
     steps:
       - name: Checkout repository
