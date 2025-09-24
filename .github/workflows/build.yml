@@ -24,7 +24,7 @@ jobs:
         run: |
           # Install required dependencies for the SDK Manager
           sudo apt-get update
-          sudo apt-get install -y libsecret-1-0 libwebkit2gtk-4.1-0 xvfb
+          sudo apt-get install -y libsecret-1-0 libwebkit2gtk-4.1-0 libgtk-3-0 adwaita-icon-theme xvfb
           
           # Create symbolic links to trick the sdkmanager into finding the older libraries
           sudo ln -s /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
@@ -48,4 +48,3 @@ jobs:
     
       - name: Build Connect IQ project
         run: monkeyc -r -f monkey.jungle -y ${{ secrets.GARMIN_DEVELOPER_KEY }} -o build/BuzzClock.prg
-
