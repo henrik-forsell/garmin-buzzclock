@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-      
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,7 +27,8 @@ jobs:
       - name: Install dependencies and unzip SDK Manager
         run: |
           sudo apt-get update
-          sudo apt-get install -y unzip wget libwebkit2gtk-4.0-37
+          # Install the correct WebKit library for Ubuntu 22.04 and xvfb for headless GUI
+          sudo apt-get install -y unzip wget libwebkit2gtk-4.1-0 xvfb
           wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip -O connectiq-sdk-manager-linux.zip
           unzip connectiq-sdk-manager-linux.zip -d connectiq-sdk-manager
       
@@ -35,8 +36,8 @@ jobs:
         env:
           CONNECTIQ_ACCEPT_LICENSE: true
         run: |
-          # Use the sdkmanager to install the latest stable SDK and devices.
-          connectiq-sdk-manager/bin/sdkmanager --update
+          # Use xvfb-run to provide a virtual display for the SDK Manager
+          xvfb-run connectiq-sdk-manager/bin/sdkmanager --update
           
       - name: Set SDK path
         run: |
@@ -58,4 +59,3 @@ jobs:
         with:
           name: garmin-app
           path: build/BuzzClock.prg
-
