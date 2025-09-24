@@ -12,59 +12,59 @@ jobs:
   build:
     runs-on: ubuntu-latest
     
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-    
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-    
-      - name: Install dependencies and unzip SDK Manager
-        run: |
-          sudo apt-get update
-          # Install the correct WebKit library for Ubuntu 22.04, xvfb for headless GUI, and core GTK dependencies
-          sudo apt-get install -y unzip wget libwebkit2gtk-4.1-0 xvfb libgtk-3-0 libgdk-3-0 libayatana-appindicator3-1
-          wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip -O connectiq-sdk-manager-linux.zip
-          unzip connectiq-sdk-manager-linux.zip -d connectiq-sdk-manager
-    
-      - name: Create symbolic link for WebKit library
-        run: |
-          # The SDK Manager requires an older version of the WebKit library.
-          # We create a symbolic link to point it to the newer, installed version.
-          sudo ln -s /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.0.so /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
+    with:
+      submodules: true
+
+  - name: Set up Java
+    uses: actions/setup-java@v4
+    with:
+      distribution: 'temurin'
+      java-version: '17'
+
+  - name: Install dependencies and unzip SDK Manager
+    run: |
+      sudo apt-get update
+      # Install all necessary dependencies for the Garmin SDK Manager
+      sudo apt-get install -y unzip wget xvfb libwebkit2gtk-4.1-0 libgtk-3-0 libgdk-3-0 libayatana-appindicator3-1 libgtk-3-bin libgdk-3-dev
+      wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip -O connectiq-sdk-manager-linux.zip
+      unzip connectiq-sdk-manager-linux.zip -d connectiq-sdk-manager
+
+  - name: Create symbolic link for WebKit library
+    run: |
+      # The SDK Manager requires an older version of the WebKit library.
+      # We create a symbolic link to point it to the newer, installed version.
+      sudo ln -s /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.0.so /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
+  
+  - name: Update linker run-time bindings
+    run: sudo ldconfig
+  
+  - name: Install latest SDK and devices
+    env:
+      CONNECTIQ_ACCEPT_LICENSE: true
+    run: |
+      # Use xvfb-run to provide a virtual display for the SDK Manager
+      xvfb-run connectiq-sdk-manager/bin/sdkmanager --update
       
-      - name: Update linker run-time bindings
-        run: sudo ldconfig
+  - name: Set SDK path
+    run: |
+      # Find the path to the latest SDK that was installed by the SDK Manager
+      SDK_PATH=$(find ~/.Garmin/ConnectIQ/Sdks -maxdepth 1 -type d -printf '%T@\n' | sort -nr | head -n 1 | xargs -I{} find ~/.Garmin/ConnectIQ/Sdks -type d -printf '%T@ %p\n' | grep '^{}' | cut -d' ' -f2)
+      echo "GARMIN_SDK_HOME=$SDK_PATH" >> $GITHUB_ENV
+      echo "$GARMIN_SDK_HOME/bin" >> $GITHUB_PATH
+
+  - name: Compile the project
+    run: |
+      # We need to make sure to use a key for signing.
+      echo "${{ secrets.GARMIN_DEVELOPER_KEY }}" > developer_key.der
       
-      - name: Install latest SDK and devices
-        env:
-          CONNECTIQ_ACCEPT_LICENSE: true
-        run: |
-          # Use xvfb-run to provide a virtual display for the SDK Manager
-          xvfb-run connectiq-sdk-manager/bin/sdkmanager --update
-          
-      - name: Set SDK path
-        run: |
-          # Find the path to the latest SDK that was installed by the SDK Manager
-          SDK_PATH=$(find ~/.Garmin/ConnectIQ/Sdks -maxdepth 1 -type d -printf '%T@\n' | sort -nr | head -n 1 | xargs -I{} find ~/.Garmin/ConnectIQ/Sdks -type d -printf '%T@ %p\n' | grep '^{}' | cut -d' ' -f2)
-          echo "GARMIN_SDK_HOME=$SDK_PATH" >> $GITHUB_ENV
-          echo "$GARMIN_SDK_HOME/bin" >> $GITHUB_PATH
-    
-      - name: Compile the project
-        run: |
-          # We need to make sure to use a key for signing.
-          echo "${{ secrets.GARMIN_DEVELOPER_KEY }}" > developer_key.der
-          
-          # Build the project using the Monkey C compiler
-          monkeyc -r -f monkey.jungle -y developer_key.der -o build/BuzzClock.prg
-          
-      - name: Upload compiled app
-        uses: actions/upload-artifact@v4
-        with:
-          name: garmin-app
-          path: build/BuzzClock.prg
+      # Build the project using the Monkey C compiler
+      monkeyc -r -f monkey.jungle -y developer_key.der -o build/BuzzClock.prg
+      
+  - name: Upload compiled app
+    uses: actions/upload-artifact@v4
+    with:
+      name: garmin-app
+      path: build/BuzzClock.prg
