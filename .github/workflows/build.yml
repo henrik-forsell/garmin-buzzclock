@@ -19,6 +19,8 @@ jobs:
           submodules: true
 
       - name: Install Connect IQ SDK
+        env:
+          CONNECTIQ_ACCEPT_LICENSE: true
         run: |
           # Install required dependencies for the SDK Manager
           sudo apt-get update
@@ -37,7 +39,6 @@ jobs:
           unzip sdk-manager.zip -d connectiq-sdk-manager
           
           # Use the SDK Manager to install a specific SDK and device files with xvfb-run
-          xvfb-run ./connectiq-sdk-manager/bin/sdkmanager --acceptLicense
           xvfb-run ./connectiq-sdk-manager/bin/sdkmanager --install --sdk-version 5.0.0 --device-api-version 4.0.0 --all-devices
     
           # Set up the path to the monkeyc compiler
