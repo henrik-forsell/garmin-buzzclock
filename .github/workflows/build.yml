@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-        
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -37,6 +37,9 @@ jobs:
           # The SDK Manager requires an older version of the WebKit library.
           # We create a symbolic link to point it to the newer, installed version.
           sudo ln -s /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.0.so /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
+      
+      - name: Update linker run-time bindings
+        run: sudo ldconfig
       
       - name: Install latest SDK and devices
         env:
