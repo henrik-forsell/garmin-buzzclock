@@ -24,6 +24,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libsecret-1-0 libwebkit2gtk-4.1-0
           
+          # Create a symbolic link to trick the sdkmanager into finding the older library
+          sudo ln -s /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
+          
           # Download and install the SDK Manager
           curl -L -o sdk-manager.zip https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip
           
