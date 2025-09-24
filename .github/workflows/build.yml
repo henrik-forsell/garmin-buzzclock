@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+        
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,8 +27,8 @@ jobs:
       - name: Install dependencies and unzip SDK Manager
         run: |
           sudo apt-get update
-          # Install the correct WebKit library for Ubuntu 22.04 and xvfb for headless GUI
-          sudo apt-get install -y unzip wget libwebkit2gtk-4.1-0 xvfb
+          # Install the correct WebKit library for Ubuntu 22.04, xvfb for headless GUI, and libgtk-3-0 for core GTK dependencies
+          sudo apt-get install -y unzip wget libwebkit2gtk-4.1-0 xvfb libgtk-3-0
           wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip -O connectiq-sdk-manager-linux.zip
           unzip connectiq-sdk-manager-linux.zip -d connectiq-sdk-manager
     
