@@ -20,7 +20,8 @@ jobs:
     
       - name: Install Connect IQ SDK
         run: |
-          # Add repository for older dependencies
+          # Add the Bionic repository and its public key
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32
           echo "deb http://cz.archive.ubuntu.com/ubuntu bionic main universe" | sudo tee -a /etc/apt/sources.list
           
           # Install required dependencies for the SDK Manager
@@ -44,3 +45,4 @@ jobs:
     
       - name: Build Connect IQ project
         run: monkeyc -r -f monkey.jungle -y ${{ secrets.GARMIN_DEVELOPER_KEY }} -o build/BuzzClock.prg
+
