@@ -17,7 +17,7 @@ jobs:
           submodules: true
 
       - name: Build and release ConnectIQ project
-        uses: garmin-ci/garmin-ci-action@v1
+        uses: connect-iq/mc-build-action@v1
         with:
           # Your Garmin developer key is stored as a GitHub secret for security.
           developer-key: ${{ secrets.GARMIN_DEVELOPER_KEY }}
