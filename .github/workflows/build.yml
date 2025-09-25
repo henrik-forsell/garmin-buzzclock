@@ -14,10 +14,12 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Install required tools
+    - name: Install WebKitGTK runtime manually
       run: |
         sudo apt-get update
-        sudo apt-get install -y unzip openjdk-11-jdk wget libsecret-1-dev libsoup2.4-1
+        sudo apt-get install -y unzip openjdk-11-jdk wget libsecret-1-dev libsoup2.4-1 libwebkit2gtk-4.1-dev
+        sudo ln -s /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
+        
 
     - name: Patch WebKitGTK loader
       run: |
