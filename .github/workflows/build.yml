@@ -14,30 +14,23 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Install dependencies and patch GTK/WebKit
+    - name: Patch libwebkit2gtk for Garmin SDK Manager
       run: |
         sudo apt-get update
-        sudo apt-get install -y \
-          unzip \
-          openjdk-11-jdk \
-          wget \
-          libsecret-1-dev \
-          libsoup2.4-1 \
-          libwebkit2gtk-4.1-dev \
-          libjavascriptcoregtk-4.1-dev
-
-        # Patch missing shared libraries expected by Garmin SDK Manager
-        [ -e /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37 ] || \
-          sudo ln -s /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
-
-        [ -e /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so.18 ] || \
-          sudo ln -s /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so.18
-
-        # Remove libsoup3 to prevent symbol conflict
-        sudo apt-get remove -y libsoup-3.0-0 || true
-
-        # Refresh dynamic linker cache
+        sudo apt-get install -y libwebkit2gtk-4.1-dev
+    
+        # Confirm the target exists before linking
+        if [ -f /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 ]; then
+          [ -e /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37 ] || \
+            sudo ln -s /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
+        else
+          echo "Missing libwebkit2gtk-4.1.so.0 — install failed"
+          exit 1
+        fi
+    
+        # Refresh linker cache
         sudo ldconfig
+
 
     - name: Download and extract Garmin SDK Manager
       run: |
