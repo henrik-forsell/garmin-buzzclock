@@ -27,17 +27,25 @@ jobs:
         with:
           submodules: true
     
+      - name: Find monkey.jungle file
+        id: find_jungle
+        # This command will search for the monkey.jungle file and print its path.
+        run: |
+          find_result=$(find . -name "monkey.jungle" -print -quit)
+          echo "Found monkey.jungle at: $find_result"
+          echo "JUNGLE_FILE_PATH=$find_result" >> $GITHUB_ENV
+      
       - name: Compile the project
         run: |
           # The Monkey C compiler is now available in the container's PATH.
-          # The -f flag points to your monkey.jungle file. The project typically
-          # has the jungle file in a 'source' directory.
+          # The -f flag points to the monkey.jungle file, which is often in the
+          # root of the project.
           # The -y flag requires a developer key for signing.
           # We need to make sure to use a key for signing.
           echo "${{ secrets.GARMIN_DEVELOPER_KEY }}" > developer_key.der
           
           # Build the project using the Monkey C compiler
-          monkeyc -r -f source/monkey.jungle -y developer_key.der -o build/BuzzClock.prg
+          monkeyc -r -f ${{ env.JUNGLE_FILE_PATH }} -y developer_key.der -o build/BuzzClock.prg
     
       - name: Upload compiled app
         uses: actions/upload-artifact@v4
