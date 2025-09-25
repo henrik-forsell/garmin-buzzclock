@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       # Use a pre-built Docker image that contains the Garmin SDK and all dependencies.
-      image: ghcr.io/garmin/connectiq-sdk:latest
+      image: ghcr.io/matco/connectiq-tester:latest
 
     steps:
       - name: Checkout repository
