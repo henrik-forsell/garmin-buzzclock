@@ -19,13 +19,14 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y unzip openjdk-11-jdk wget
 
-    - name: Locate and install Connect IQ SDK
+    - name: Download and install Connect IQ SDK
       run: |
         wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip -O sdk-manager.zip
         unzip sdk-manager.zip -d sdk-manager
-        find sdk-manager -type f -name sdkmanager -exec chmod +x {} \;
-        SDK_PATH=$(find sdk-manager -type d -name 'connectiq-sdk*' | head -n 1)
-        echo "SDK_PATH=$SDK_PATH" >> $GITHUB_ENV
+        chmod +x sdk-manager/sdk-manager
+        ./sdk-manager/sdk-manager --install latest
+        SDK_PATH=$(./sdk-manager/sdk-manager --show-path latest)
+        echo "MONKEYC=$SDK_PATH/bin/monkeyc" >> $GITHUB_ENV
 
     - name: Decode developer key
       run: |
@@ -33,7 +34,8 @@ jobs:
 
     - name: Build BuzzClock widget
       run: |
-        $SDK_PATH/bin/monkeyc \
+        echo "Using monkeyc at: $MONKEYC"
+        $MONKEYC \
           -o BuzzClock.prg \
           -m manifest.xml \
           -y developer_key.der \
