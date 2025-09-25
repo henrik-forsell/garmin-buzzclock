@@ -21,7 +21,7 @@ jobs:
 
     - name: Download and install Connect IQ SDK Manager
       run: |
-        wget https://developer.garmin.com/downloads/connect-iq/sdks/connectiq-sdk-manager-linux.zip -O sdk-manager.zip
+        wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip -O sdk-manager.zip
         unzip sdk-manager.zip -d sdk-manager
         chmod +x sdk-manager/sdkmanager
         ./sdk-manager/sdkmanager --install latest
