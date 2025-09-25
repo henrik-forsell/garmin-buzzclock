@@ -17,6 +17,11 @@ jobs:
       image: ghcr.io/matco/connectiq-tester:latest
 
     steps:
+      - name: Install Git
+        # The actions/checkout action with submodules requires git to be installed.
+        # This step ensures it's available in the container.
+        run: apt-get update && apt-get install -y git
+    
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
