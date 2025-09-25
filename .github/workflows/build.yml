@@ -36,6 +36,38 @@ jobs:
         # Install latest SDK
         "$SDKMGR" --install latest
 
-        # Capture SDK path
+        # Get SDK path dynamically
         SDK_PATH=$("$SDKMGR" --show-path latest)
+        if [ -z "$SDK_PATH" ]; then
+          echo "ERROR: SDK_PATH is empty. sdkmanager may have failed."
+          exit 1
+        fi
         echo "SDK_PATH=$SDK_PATH" >> $GITHUB_ENV
+
+        # Find monkeyc compiler dynamically
+        MONKEYC=$(find "$SDK_PATH" -type f -name monkeyc | head -n 1)
+        if [ -z "$MONKEYC" ]; then
+          echo "ERROR: monkeyc compiler not found in SDK."
+          exit 1
+        fi
+        echo "MONKEYC=$MONKEYC" >> $GITHUB_ENV
+
+    - name: Decode developer key
+      run: |
+        echo "${{ secrets.DEVELOPER_KEY_B64 }}" | base64 -d > developer_key.der
+
+    - name: Build BuzzClock widget
+      run: |
+        echo "Using monkeyc at: $MONKEYC"
+        "$MONKEYC" \
+          -o BuzzClock.prg \
+          -m manifest.xml \
+          -y developer_key.der \
+          -z resources \
+          -w source
+
+    - name: Upload BuzzClock.prg
+      uses: actions/upload-artifact@v4
+      with:
+        name: BuzzClock
+        path: BuzzClock.prg
