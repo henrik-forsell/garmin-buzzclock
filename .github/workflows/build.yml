@@ -20,6 +20,12 @@ jobs:
         sudo apt-get install -y unzip openjdk-11-jdk wget libsecret-1-dev libsoup2.4-1 libwebkit2gtk-4.1-dev
         # Patch libwebkit2gtk for SDK Manager
         sudo ln -sf /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37 || true
+
+    - name: Patch JavaScriptCoreGTK for SDK Manager
+      run: |
+        sudo apt-get install -y libjavascriptcoregtk-4.1-dev
+        [ -e /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so.18 ] || \
+          sudo ln -s /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so.18
       
     - name: Download and install Connect IQ SDK
       run: |
