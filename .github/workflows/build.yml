@@ -14,23 +14,30 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Install dependencies
+    - name: Install required tools
       run: |
         sudo apt-get update
         sudo apt-get install -y unzip openjdk-11-jdk wget
 
-    - name: Locate and install Connect IQ SDK
+    - name: Download and install Connect IQ SDK
       run: |
         wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip -O sdk-manager.zip
         unzip sdk-manager.zip -d sdk-manager
-        find sdk-manager -type f -name sdkmanager -exec chmod +x {} \;
-        SDK_PATH=$(find sdk-manager -type d -name 'connectiq-sdk*' | head -n 1)
+        chmod +x sdk-manager/sdk-manager
+        ./sdk-manager/sdk-manager --install latest
+        SDK_PATH=$(./sdk-manager/sdk-manager --show-path latest)
         echo "SDK_PATH=$SDK_PATH" >> $GITHUB_ENV
         echo "MONKEYC=$SDK_PATH/bin/monkeyc" >> $GITHUB_ENV
 
     - name: Decode developer key
       run: |
         echo "${{ secrets.DEVELOPER_KEY_B64 }}" | base64 -d > developer_key.der
+        
+    - name: Debug SDK install
+      run: |
+        echo "SDK_PATH=$SDK_PATH"
+        echo "MONKEYC=$MONKEYC"
+        ls -l $SDK_PATH/bin
 
     - name: Build BuzzClock widget
       run: |
@@ -42,7 +49,7 @@ jobs:
           -z resources \
           -w source
 
-    - name: Upload BuzzClock.prg artifact
+    - name: Upload BuzzClock.prg
       uses: actions/upload-artifact@v4
       with:
         name: BuzzClock
