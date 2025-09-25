@@ -1,4 +1,4 @@
-name: Build Garmin BuzzClock
+name: Build BuzzClock
 
 on:
   push:
@@ -11,66 +11,52 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Update Ubuntu and Patch GTK/WebKit dependencies
+    - name: Install dependencies and patch GTK/WebKit
       run: |
         sudo apt-get update
         sudo apt-get install -y \
+          unzip \
+          openjdk-11-jdk \
+          wget \
+          libsecret-1-dev \
+          libsoup2.4-1 \
           libwebkit2gtk-4.1-dev \
-          libjavascriptcoregtk-4.1-dev \
-          libsoup2.4-1
-    
+          libjavascriptcoregtk-4.1-dev
+
+        # Patch missing shared libraries expected by Garmin SDK Manager
         [ -e /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37 ] || \
           sudo ln -s /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
-    
+
         [ -e /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so.18 ] || \
           sudo ln -s /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so.18
-    
+
+        # Remove libsoup3 to prevent symbol conflict
         sudo apt-get remove -y libsoup-3.0-0 || true
 
+        # Refresh dynamic linker cache
+        sudo ldconfig
 
-    - name: Patch JavaScriptCoreGTK for SDK Manager
+    - name: Download and extract Garmin SDK Manager
       run: |
-        sudo apt-get install -y libjavascriptcoregtk-4.1-dev
-        [ -e /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so.18 ] || \
-          sudo ln -s /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so.18
-    - name: Remove libsoup3 to prevent conflict
-      run: |
-        sudo apt-get remove -y libsoup-3.0-0 || true
-      
-    - name: Download and install Connect IQ SDK
-      run: |
-        # Download and unzip SDK Manager
         wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip -O sdk-manager.zip
         unzip sdk-manager.zip -d sdk-manager
-
-        # Dynamically locate sdkmanager binary and make it executable
         find sdk-manager -type f -name sdkmanager -exec chmod +x {} \;
 
-        # Run SDK Manager to install latest SDK
+    - name: Install Connect IQ SDK
+      run: |
         sdk-manager/bin/sdkmanager --install latest
 
-        # Dynamically detect SDK path
+    - name: Build BuzzClock
+      run: |
         SDK_PATH=$(find sdk-manager -type d -name 'connectiq-sdk*' | head -n 1)
-        echo "SDK_PATH=$SDK_PATH" >> $GITHUB_ENV
-
-    - name: Decode developer key
-      run: |
+        MONKEYC=$(find "$SDK_PATH" -type f -name monkeyc | head -n 1)
         echo "${{ secrets.DEVELOPER_KEY_B64 }}" | base64 -d > developer_key.der
-
-    - name: Build BuzzClock widget
-      run: |
-        $SDK_PATH/bin/monkeyc \
+        "$MONKEYC" \
           -o BuzzClock.prg \
           -m manifest.xml \
           -y developer_key.der \
           -z resources \
           -w source
-
-    - name: Upload BuzzClock.prg
-      uses: actions/upload-artifact@v4
-      with:
-        name: BuzzClock
-        path: BuzzClock.prg
