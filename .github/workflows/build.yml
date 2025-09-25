@@ -10,6 +10,7 @@ on:
 
 jobs:
   build:
+    # Use a specific Ubuntu version where the required dependencies are available.
     runs-on: ubuntu-20.04
 
     steps:
