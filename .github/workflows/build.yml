@@ -23,20 +23,34 @@ jobs:
       run: |
         wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip -O sdk-manager.zip
         unzip sdk-manager.zip -d sdk-manager
+    
         # Dynamically locate sdkmanager binary
-        SDKMGR=$(find sdk-root -type f -name sdkmanager | head -n 1)
+        SDKMGR=$(find sdk-manager -type f -name sdkmanager | head -n 1)
         if [ -z "$SDKMGR" ]; then
           echo "ERROR: sdkmanager binary not found."
           exit 1
         fi
         chmod +x "$SDKMGR"
-
+    
         # Install latest SDK
-        "$SDKMGR" --install latest        
-
-        # Dynamically find monkeyc compiler
+        "$SDKMGR" --install latest
+    
+        # Get SDK path dynamically
+        SDK_PATH=$("$SDKMGR" --show-path latest)
+        if [ -z "$SDK_PATH" ]; then
+          echo "ERROR: SDK_PATH is empty. sdkmanager may have failed."
+          exit 1
+        fi
+        echo "SDK_PATH=$SDK_PATH" >> $GITHUB_ENV
+    
+        # Find monkeyc compiler dynamically
         MONKEYC=$(find "$SDK_PATH" -type f -name monkeyc | head -n 1)
-        echo "MONKEYC=$MONKEYC" >> $GITHUB_ENV        
+        if [ -z "$MONKEYC" ]; then
+          echo "ERROR: monkeyc compiler not found in SDK."
+          exit 1
+        fi
+        echo "MONKEYC=$MONKEYC" >> $GITHUB_ENV
+
         
     - name: Decode developer key
       run: |
