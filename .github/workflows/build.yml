@@ -21,10 +21,6 @@ jobs:
         # Patch libwebkit2gtk for SDK Manager
         sudo ln -sf /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37 || true
       
-    - name: Patch WebKitGTK loader
-      run: |
-        sudo ln -s /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
-
     - name: Download and install Connect IQ SDK
       run: |
         # Download and unzip SDK Manager
