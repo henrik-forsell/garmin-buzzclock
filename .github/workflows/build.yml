@@ -17,7 +17,7 @@ jobs:
     - name: Install required tools
       run: |
         sudo apt-get update
-        sudo apt-get install -y unzip openjdk-11-jdk wget libsecret-1-dev
+        sudo apt-get install -y unzip openjdk-11-jdk wget
 
     - name: Download and install Connect IQ SDK
       run: |
@@ -25,14 +25,7 @@ jobs:
         unzip sdk-manager.zip -d sdk-manager
         chmod +x sdk-manager/bin/sdkmanager
         sdk-manager/bin/sdkmanager --install latest
-
-        # Dynamically find SDK path
-        SDK_PATH=$(sdk-manager/bin/sdkmanager --show-path latest)
-        echo "SDK_PATH=$SDK_PATH" >> $GITHUB_ENV
-
-        # Dynamically find monkeyc compiler
-        MONKEYC=$(find "$SDK_PATH" -type f -name monkeyc | head -n 1)
-        echo "MONKEYC=$MONKEYC" >> $GITHUB_ENV
+        echo "SDK_PATH=$(sdk-manager/bin/sdkmanager --show-path latest)" >> $GITHUB_ENV
 
     - name: Decode developer key
       run: |
@@ -40,8 +33,7 @@ jobs:
 
     - name: Build BuzzClock widget
       run: |
-        echo "Using monkeyc at: $MONKEYC"
-        "$MONKEYC" \
+        $SDK_PATH/bin/monkeyc \
           -o BuzzClock.prg \
           -m manifest.xml \
           -y developer_key.der \
