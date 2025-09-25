@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04  # Required for libwebkit2gtk compatibility
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
@@ -16,6 +16,7 @@ jobs:
 
     - name: Install required tools
       run: |
+        sudo add-apt-repository universe
         sudo apt-get update
         sudo apt-get install -y unzip openjdk-11-jdk wget libsecret-1-dev libwebkit2gtk-4.0-dev
 
