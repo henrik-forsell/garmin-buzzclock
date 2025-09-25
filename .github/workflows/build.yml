@@ -19,13 +19,14 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y unzip openjdk-11-jdk wget
 
-    - name: Download and install Connect IQ SDK
+    - name: Locate and install Connect IQ SDK
       run: |
         wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip -O sdk-manager.zip
         unzip sdk-manager.zip -d sdk-manager
-        chmod +x sdk-manager/bin/sdkmanager
-        sdk-manager/bin/sdkmanager --install latest
-        echo "SDK_PATH=$(sdk-manager/bin/sdkmanager --show-path latest)" >> $GITHUB_ENV
+        find sdk-manager -type f -name sdkmanager -exec chmod +x {} \;
+        SDK_PATH=$(find sdk-manager -type d -name 'connectiq-sdk*' | head -n 1)
+        echo "SDK_PATH=$SDK_PATH" >> $GITHUB_ENV
+        echo "MONKEYC=$SDK_PATH/bin/monkeyc" >> $GITHUB_ENV
 
     - name: Decode developer key
       run: |
