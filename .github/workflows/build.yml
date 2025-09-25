@@ -1,53 +1,47 @@
-name: Build Garmin PRG
+name: Build Garmin BuzzClock
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   build:
-    # Use a specific Ubuntu version where the required dependencies are available.
     runs-on: ubuntu-latest
-    container:
-      # Use a pre-built Docker image that contains the Garmin SDK and all dependencies.
-      image: ghcr.io/matco/connectiq-tester:latest
 
     steps:
-      - name: Install Git
-        # The actions/checkout action with submodules requires git to be installed.
-        # This step ensures it's available in the container.
-        run: apt-get update && apt-get install -y git
-    
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-    
-      - name: List files for debugging
-        # This command will list all files in the repository to help us
-        # find the correct path for the monkey.jungle file.
-        run: ls -R
-      
-      - name: Compile the project
-        run: |
-          # The Monkey C compiler is now available in the container's PATH.
-          # The -f flag points to the monkey.jungle file, which is often in the
-          # root of the project.
-          # The -y flag requires a developer key for signing.
-          # We need to make sure to use a key for signing.
-          echo "${{ secrets.GARMIN_DEVELOPER_KEY }}" > developer_key.der
-          
-          # Build the project using the Monkey C compiler
-          # TODO: Replace 'monkey.jungle' with the actual path to your jungle file.
-          # The correct path should be found in the output of the previous step.
-          monkeyc -r -f monkey.jungle -y developer_key.der -o build/BuzzClock.prg
-    
-      - name: Upload compiled app
-        uses: actions/upload-artifact@v4
-        with:
-          name: garmin-app
-          path: build/BuzzClock.prg
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y unzip openjdk-11-jdk wget
+
+    - name: Download and install Connect IQ SDK Manager
+      run: |
+        wget https://developer.garmin.com/downloads/connect-iq/sdks/connectiq-sdk-manager-linux.zip -O sdk-manager.zip
+        unzip sdk-manager.zip -d sdk-manager
+        chmod +x sdk-manager/sdkmanager
+        ./sdk-manager/sdkmanager --install latest
+        echo "SDK_PATH=$(./sdk-manager/sdkmanager --show-path latest)" >> $GITHUB_ENV
+
+    - name: Decode developer key
+      run: |
+        echo "${{ secrets.DEVELOPER_KEY_B64 }}" | base64 -d > developer_key.der
+
+    - name: Build BuzzClock widget
+      run: |
+        $SDK_PATH/bin/monkeyc \
+          -o BuzzClock.prg \
+          -m manifest.xml \
+          -y developer_key.der \
+          -z resources \
+          -w source
+
+    - name: Upload BuzzClock.prg artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: BuzzClock
+        path: BuzzClock.prg
