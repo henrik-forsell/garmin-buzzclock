@@ -19,18 +19,17 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y unzip openjdk-11-jdk wget
 
-
     - name: Download and install Connect IQ SDK
       run: |
         wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip -O sdk-manager.zip
         unzip sdk-manager.zip -d sdk-manager
         chmod +x sdk-manager/bin/sdkmanager
         sdk-manager/bin/sdkmanager --install latest
-    
+
         # Dynamically find SDK path
         SDK_PATH=$(sdk-manager/bin/sdkmanager --show-path latest)
         echo "SDK_PATH=$SDK_PATH" >> $GITHUB_ENV
-    
+
         # Dynamically find monkeyc compiler
         MONKEYC=$(find "$SDK_PATH" -type f -name monkeyc | head -n 1)
         echo "MONKEYC=$MONKEYC" >> $GITHUB_ENV
@@ -53,3 +52,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: BuzzClock
+        path: BuzzClock.prg
