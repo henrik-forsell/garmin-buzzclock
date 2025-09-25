@@ -27,6 +27,8 @@ jobs:
     
       - name: Install dependencies
         run: |
+          # Ensure the universe repository is enabled for a wider range of packages.
+          sudo apt-add-repository universe
           sudo apt-get update
           # Install all necessary dependencies for the Garmin SDK Manager.
           # libwebkit2gtk-4.0-37 is available on Ubuntu 20.04.
