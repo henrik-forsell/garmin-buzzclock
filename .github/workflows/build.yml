@@ -21,18 +21,21 @@ jobs:
 
     - name: Download and install Connect IQ SDK
       run: |
+        # Download and unzip SDK Manager
         wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip -O sdk-manager.zip
         unzip sdk-manager.zip -d sdk-manager
-        chmod +x sdk-manager/bin/sdkmanager
-        sdk-manager/bin/sdkmanager --install latest
-        echo "SDK_PATH=$(sdk-manager/bin/sdkmanager --show-path latest)" >> $GITHUB_ENV
 
-    - name: Decode developer key
-      run: |
-        echo "${{ secrets.DEVELOPER_KEY_B64 }}" | base64 -d > developer_key.der
+        # Dynamically locate sdkmanager binary
+        SDKMGR=$(find sdk-manager -type f -name sdkmanager | head -n 1)
+        if [ -z "$SDKMGR" ]; then
+          echo "ERROR: sdkmanager binary not found."
+          exit 1
+        fi
+        chmod +x "$SDKMGR"
 
-    - name: Build BuzzClock widget
-      run: |
-        $SDK_PATH/bin/monkeyc \
-          -o BuzzClock.prg \
-          -m manifest.xml \
+        # Install latest SDK
+        "$SDKMGR" --install latest
+
+        # Capture SDK path
+        SDK_PATH=$("$SDKMGR" --show-path latest)
+        echo "SDK_PATH=$SDK_PATH" >> $GITHUB_ENV
