@@ -25,24 +25,23 @@ jobs:
         unzip sdk-manager.zip -d sdk-manager
         chmod +x sdk-manager/sdk-manager
         ./sdk-manager/sdk-manager --install latest
+
+        # Dynamically find SDK path
         SDK_PATH=$(./sdk-manager/sdk-manager --show-path latest)
         echo "SDK_PATH=$SDK_PATH" >> $GITHUB_ENV
-        echo "MONKEYC=$SDK_PATH/bin/monkeyc" >> $GITHUB_ENV
+
+        # Dynamically find monkeyc compiler
+        MONKEYC=$(find "$SDK_PATH" -type f -name monkeyc | head -n 1)
+        echo "MONKEYC=$MONKEYC" >> $GITHUB_ENV
 
     - name: Decode developer key
       run: |
         echo "${{ secrets.DEVELOPER_KEY_B64 }}" | base64 -d > developer_key.der
-        
-    - name: Debug SDK install
-      run: |
-        echo "SDK_PATH=$SDK_PATH"
-        echo "MONKEYC=$MONKEYC"
-        ls -l $SDK_PATH/bin
 
     - name: Build BuzzClock widget
       run: |
         echo "Using monkeyc at: $MONKEYC"
-        $MONKEYC \
+        "$MONKEYC" \
           -o BuzzClock.prg \
           -m manifest.xml \
           -y developer_key.der \
@@ -53,4 +52,3 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: BuzzClock
-        path: BuzzClock.prg
