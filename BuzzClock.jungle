@@ -7,7 +7,7 @@
         <dir>source</dir>
     </sourceDirs>
     <targets>
-        <target>vívoactive4</target>
+        <target>fenix5</target>
     </targets>
     <mainClass>BuzzClock</mainClass>
 </project>
