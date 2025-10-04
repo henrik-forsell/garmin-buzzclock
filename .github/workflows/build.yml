@@ -26,7 +26,7 @@ jobs:
 
       # --- Garmin build step using jungle in repo root ---
       - name: Build Garmin widget
-        uses: blackshadev/garmin-connectiq-release-action@latest
+        uses: blackshadev/garmin-connectiq-release-action@8.2.1-1
         with:
           entryPoint: ""
           developerKey: "./developer-key.der"
