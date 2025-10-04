@@ -2,7 +2,8 @@ name: Build Garmin Widget
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
 
 jobs:
@@ -10,33 +11,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # --- 🏗️ Previous steps (keep these untouched) ---
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: temurin
+          java-version: 17
 
-      - name: Decode Garmin developer key
-        run: echo "${{ secrets.GARMIN_DEV_KEY }}" | base64 --decode > developer-key.der
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build Garmin widget
-        uses: blackshadev/garmin-connectiq-release-action@8.2.1-1
-        with:
-          entryPoint: ""   # Leave blank to use default container entrypoint
-          developerKey: "./developer-key.der"
-          projectJungle: "monkey.jungle"
-          outputPath: "build/BuzzClock.prg"
-          args: >
-            --release
-            --output build/BuzzClock.prg
-            --developer-key ./developer-key.der
-            --project monkey.jungle
+      # --- 🧩 New jungle detection step ---
+      - name: Detect jungle file
+        id: detect_jungle
+        run: |
+          echo "🔍 Searching for .jungle files..."
+          JUNGLE_FILES=$(find . -type f -name "*.jungle")
+          COUNT=$(echo "$JUNGLE_FILES" | wc -l)
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: BuzzClock
-          path: build/BuzzClock.prg
+          if [ "$COUNT" -eq 0 ]; then
+            echo "❌ No .jungle file found in repository!"
+            exit 1
+          elif
