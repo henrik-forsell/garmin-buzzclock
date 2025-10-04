@@ -1,1 +1,10 @@
-
+<?xml version="1.0" encoding="UTF-8"?>
+<application xmlns="http://www.garmin.com/xml/connectiq" >
+    <id>com.example.buzzclock</id>
+    <name>BuzzClock</name>
+    <type>watchface</type>
+    <version>1.0.0</version>
+    <languages>
+        <language>en</language>
+    </languages>
+</application>
