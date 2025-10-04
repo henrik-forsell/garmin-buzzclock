@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # --- Previous steps (keep these untouched) ---
+      # --- Previous steps (kept intact) ---
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -24,31 +24,50 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # --- Fixed jungle detection step ---
+      # --- Robust jungle detection step (fixed) ---
       - name: Detect jungle file
         id: detect_jungle
         shell: bash
         run: |
-          echo "Searching for .jungle files..."
-          JUNGLE_FILES=$(find . -type f -name "*.jungle")
-          echo "..." 
+          set -euo pipefail
 
-          COUNT=$(echo "$JUNGLE_FILES" | grep -c '.')
-          if [ "$COUNT" -eq 0 ]; then
-            echo "No .jungle file found in repository!"
+          echo "Searching for .jungle files..."
+          echo "Workspace: $(pwd)"
+          echo "Listing top-level files:"
+          ls -la
+
+          echo "Recursive listing (trimmed):"
+          # show recursive tree but limit depth for readability
+          find . -maxdepth 3 -type d -print -o -type f -printf "  %p\n" | sed -n '1,200p' || true
+
+          echo "Searching for .jungle files (null-separated)..."
+          mapfile -d '' JUNGLE_ARRAY < <(find . -type f -name '*.jungle' -print0)
+
+          JUNGLE_COUNT=${#JUNGLE_ARRAY[@]}
+          echo "Found $JUNGLE_COUNT .jungle file(s)."
+
+          if [ "$JUNGLE_COUNT" -eq 0 ]; then
+            echo "No .jungle files found. Showing similar candidates:"
+            find . -type f \( -name '*.jungle' -o -name '*.mcproj' -o -name '*project*' -o -name '*.xml' \) -print || true
+            echo "If your jungle file is generated or ignored by .gitignore, ensure it is present in the repo during CI."
             exit 1
-          elif [ "$COUNT" -gt 1 ]; then
+          elif [ "$JUNGLE_COUNT" -gt 1 ]; then
             echo "Multiple .jungle files found:"
-            echo "$JUNGLE_FILES"
-            echo "Please specify which one to use or clean up duplicates."
+            for f in "${JUNGLE_ARRAY[@]}"; do
+              # trim leading ./ for readability
+              printf " - %s\n" "${f#./}"
+            done
+            echo "Please specify which to use or remove duplicates."
             exit 1
+          else
+            # single jungle file — normalize path (remove leading ./)
+            JUNGLE_PATH="${JUNGLE_ARRAY[0]}"
+            JUNGLE_PATH="${JUNGLE_PATH#./}"
+            echo "Using jungle file: $JUNGLE_PATH"
+            echo "jungle_path=$JUNGLE_PATH" >> "$GITHUB_OUTPUT"
           fi
 
-          JUNGLE_PATH=$(echo "$JUNGLE_FILES" | head -n 1)
-          echo "Found jungle file: $JUNGLE_PATH"
-          echo "jungle_path=$JUNGLE_PATH" >> "$GITHUB_OUTPUT"
-
-      # --- Garmin build step ---
+      # --- Garmin build step (uses detected jungle) ---
       - name: Build Garmin widget
         uses: blackshadev/garmin-connectiq-release-action@8.2.1-1
         with:
@@ -68,3 +87,4 @@ jobs:
         with:
           name: BuzzClock.prg
           path: build/BuzzClock.prg
+ 
