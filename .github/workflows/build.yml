@@ -1,56 +1,45 @@
-name: Build BuzzClock
+name: Build Garmin Widget
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      # 1. Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Patch libwebkit2gtk for Garmin SDK Manager
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libwebkit2gtk-4.1-dev
-        sudo apt-get install -y libsoup2.4-1
-    
-        # Confirm the target exists before linking
-        if [ -f /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 ]; then
-          [ -e /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37 ] || \
-            sudo ln -s /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
-        else
-          echo "Missing libwebkit2gtk-4.1.so.0 — install failed"
-          exit 1
-        fi
-    
-        # Refresh linker cache
-        sudo ldconfig
+      # 2. Set up Java (needed by the Connect IQ compiler)
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
+      # 3. Build Garmin widget with Blackshadev's action
+      - name: Build widget
+        uses: blackshadev/garmin-connectiq-release-action@8.2.1-1
+        with:
+          sdk-version: "4.2.5"                # Set your SDK version here
+          project-file: "monkey.jungle"       # Path to your jungle file
+          release: true                       # Builds a release (signed) .prg
+          developer-key: ${{ secrets.GARMIN_DEV_KEY }}  # Your .der file (base64 encoded)
+          developer-key-pass: ${{ secrets.GARMIN_DEV_KEY_PASS }}  # Optional password
+          output-dir: "build"                 # Place output here
 
-    - name: Download and extract Garmin SDK Manager
-      run: |
-        wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip -O sdk-manager.zip
-        unzip sdk-manager.zip -d sdk-manager
-        find sdk-manager -type f -name sdkmanager -exec chmod +x {} \;
+      # 4. Rename the artifact (if not automatically named)
+      - name: Rename artifact
+        run: |
+          find build -type f -name "*.prg" -exec mv {} build/BuzzClock.prg \;
 
-    - name: Install Connect IQ SDK
-      run: |
-        sdk-manager/bin/sdkmanager --install latest
-
-    - name: Build BuzzClock
-      run: |
-        SDK_PATH=$(find sdk-manager -type d -name 'connectiq-sdk*' | head -n 1)
-        MONKEYC=$(find "$SDK_PATH" -type f -name monkeyc | head -n 1)
-        echo "${{ secrets.DEVELOPER_KEY_B64 }}" | base64 -d > developer_key.der
-        "$MONKEYC" \
-          -o BuzzClock.prg \
-          -m manifest.xml \
-          -y developer_key.der \
-          -z resources \
-          -w source
+      # 5. Upload artifact (optional but handy)
+      - name: Upload BuzzClock artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BuzzClock
+          path: build/BuzzClock.prg
