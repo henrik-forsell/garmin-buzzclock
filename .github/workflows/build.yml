@@ -24,69 +24,19 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # --- New step: Generate minimal jungle file ---
-      - name: Generate jungle file
-        run: |
-          mkdir -p project
-          cat > project/monkey.jungle <<'EOF'
-<?xml version="1.0" encoding="UTF-8"?>
-<project>
-  <name>BuzzClock</name>
-  <appType>watchface</appType>
-  <version>1.0.0</version>
-  <sourceDirs>
-    <dir>source</dir>
-  </sourceDirs>
-  <targets>
-    <target>vívoactive4</target>
-  </targets>
-  <mainClass>BuzzClock</mainClass>
-</project>
-EOF
-
-      # --- Robust jungle detection step ---
-      - name: Detect jungle file
-        id: detect_jungle
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          echo "Searching for .jungle files..."
-          mapfile -d '' JUNGLE_ARRAY < <(find . -type f -name '*.jungle' -print0)
-
-          JUNGLE_COUNT=${#JUNGLE_ARRAY[@]}
-          echo "Found $JUNGLE_COUNT .jungle file(s)."
-
-          if [ "$JUNGLE_COUNT" -eq 0 ]; then
-            echo "No .jungle files found. Exiting."
-            exit 1
-          elif [ "$JUNGLE_COUNT" -gt 1 ]; then
-            echo "Multiple .jungle files found:"
-            for f in "${JUNGLE_ARRAY[@]}"; do
-              printf " - %s\n" "${f#./}"
-            done
-            echo "Please specify which one to use or remove duplicates."
-            exit 1
-          else
-            JUNGLE_PATH="${JUNGLE_ARRAY[0]}"
-            JUNGLE_PATH="${JUNGLE_PATH#./}"
-            echo "Using jungle file: $JUNGLE_PATH"
-            echo "jungle_path=$JUNGLE_PATH" >> "$GITHUB_OUTPUT"
-          fi
-
-      # --- Garmin build step ---
+      # --- Garmin build step using jungle in repo root ---
       - name: Build Garmin widget
         uses: blackshadev/garmin-connectiq-release-action@8.2.1-1
         with:
           entryPoint: ""
           developerKey: "./developer-key.der"
-          projectJungle: "${{ steps.detect_jungle.outputs.jungle_path }}"
+          projectJungle: "./BuzzClock.jungle"
           outputPath: "build/BuzzClock.prg"
           args: >
             --release
             --output build/BuzzClock.prg
             --developer-key ./developer-key.der
-            --project ${{ steps.detect_jungle.outputs.jungle_path }}
+            --project ./BuzzClock.jungle
 
       # --- Upload artifact ---
       - name: Upload PRG artifact
@@ -94,4 +44,3 @@ EOF
         with:
           name: BuzzClock.prg
           path: build/BuzzClock.prg
- 
