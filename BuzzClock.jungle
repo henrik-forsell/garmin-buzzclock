@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <name>BuzzClock</name>
+    <appType>watchface</appType>
+    <version>1.0.0</version>
+    <sourceDirs>
+        <dir>source</dir>
+    </sourceDirs>
+    <targets>
+        <target>vívoactive4</target>
+    </targets>
+    <mainClass>BuzzClock</mainClass>
+</project>
