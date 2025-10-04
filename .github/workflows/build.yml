@@ -24,15 +24,46 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # --- 🧩 New jungle detection step ---
+      # --- 🧩 Fixed jungle detection step ---
       - name: Detect jungle file
         id: detect_jungle
+        shell: bash
         run: |
           echo "🔍 Searching for .jungle files..."
           JUNGLE_FILES=$(find . -type f -name "*.jungle")
-          COUNT=$(echo "$JUNGLE_FILES" | wc -l)
 
+          COUNT=$(echo "$JUNGLE_FILES" | grep -c '.')
           if [ "$COUNT" -eq 0 ]; then
             echo "❌ No .jungle file found in repository!"
             exit 1
-          elif
+          elif [ "$COUNT" -gt 1 ]; then
+            echo "❌ Multiple .jungle files found:"
+            echo "$JUNGLE_FILES"
+            echo "Please specify which one to use or clean up duplicates."
+            exit 1
+          fi
+
+          JUNGLE_PATH=$(echo "$JUNGLE_FILES" | head -n 1)
+          echo "✅ Found jungle file: $JUNGLE_PATH"
+          echo "jungle_path=$JUNGLE_PATH" >> "$GITHUB_OUTPUT"
+
+      # --- 🧱 Garmin build step ---
+      - name: Build Garmin widget
+        uses: blackshadev/garmin-connectiq-release-action@8.2.1-1
+        with:
+          entryPoint: ""
+          developerKey: "./developer-key.der"
+          projectJungle: "${{ steps.detect_jungle.outputs.jungle_path }}"
+          outputPath: "build/BuzzClock.prg"
+          args: >
+            --release
+            --output build/BuzzClock.prg
+            --developer-key ./developer-key.der
+            --project ${{ steps.detect_jungle.outputs.jungle_path }}
+
+      # --- 📦 Upload artifact ---
+      - name: Upload PRG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BuzzClock.prg
+          path: build/BuzzClock.prg
