@@ -25,12 +25,15 @@ jobs:
       - name: Build Garmin widget
         uses: blackshadev/garmin-connectiq-release-action@8.2.1-1
         with:
-          # The "entryPoint" here is your main app class name, NOT a file path
-          entryPoint: "BuzzClock"                   # e.g., the class defined with `class BuzzClockApp extends AppBase { ... }`
-          projectJungle: "monkey.jungle"            # relative path to your jungle file
-          developerKey: "./developer-key.der"       # decoded key
-          outputPath: "build/BuzzClock.prg"         # where to store .prg
-          args: "--release"
+          entryPoint: ""   # Leave blank to use default container entrypoint
+          developerKey: "./developer-key.der"
+          projectJungle: "monkey.jungle"
+          outputPath: "build/BuzzClock.prg"
+          args: >
+            --release
+            --output build/BuzzClock.prg
+            --developer-key ./developer-key.der
+            --project monkey.jungle
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
