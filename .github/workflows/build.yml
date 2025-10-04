@@ -19,14 +19,18 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      # Optional: decode developer key if stored base64-encoded
+      - name: Decode Garmin developer key
+        run: echo "${{ secrets.GARMIN_DEV_KEY }}" | base64 --decode > developer-key.der
+
       - name: Build Garmin widget
         uses: blackshadev/garmin-connectiq-release-action@8.2.1-1
         with:
-          entryPoint: "source/BuzzClock.mc"        # Your main source file
-          projectJungle: "monkey.jungle"           # Jungle file path
-          developerKey: ${{ secrets.GARMIN_DEV_KEY }}  # Base64 string of developer .der
-          outputPath: "build/BuzzClock.prg"        # Output file path
-          args: "--release"                        # Optional compiler args
+          entryPoint: "./source/BuzzClock.mc"    # Path to main Monkey C file
+          projectJungle: "./monkey.jungle"       # Jungle file path
+          developerKey: "./developer-key.der"    # Local path to decoded key
+          outputPath: "./build/BuzzClock.prg"    # Where to write .prg
+          args: "--release"                      # Compiler flags
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
