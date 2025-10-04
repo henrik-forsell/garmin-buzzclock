@@ -10,35 +10,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Set up Java (needed by the Connect IQ compiler)
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # 3. Build Garmin widget with Blackshadev's action
-      - name: Build widget
+      - name: Build Garmin widget
         uses: blackshadev/garmin-connectiq-release-action@8.2.1-1
         with:
-          sdk-version: "4.2.5"                # Set your SDK version here
-          project-file: "monkey.jungle"       # Path to your jungle file
-          release: true                       # Builds a release (signed) .prg
-          developer-key: ${{ secrets.GARMIN_DEV_KEY }}  # Your .der file (base64 encoded)
-          developer-key-pass: ${{ secrets.GARMIN_DEV_KEY_PASS }}  # Optional password
-          output-dir: "build"                 # Place output here
+          entryPoint: "source/BuzzClock.mc"        # Your main source file
+          projectJungle: "monkey.jungle"           # Jungle file path
+          developerKey: ${{ secrets.GARMIN_DEV_KEY }}  # Base64 string of developer .der
+          outputPath: "build/BuzzClock.prg"        # Output file path
+          args: "--release"                        # Optional compiler args
 
-      # 4. Rename the artifact (if not automatically named)
-      - name: Rename artifact
-        run: |
-          find build -type f -name "*.prg" -exec mv {} build/BuzzClock.prg \;
-
-      # 5. Upload artifact (optional but handy)
-      - name: Upload BuzzClock artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: BuzzClock
