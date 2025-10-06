@@ -1,4 +1,4 @@
-name: Build BuzzClock
+name: Build BuzzClock (Docker)
 
 on:
   push:
@@ -8,56 +8,30 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+
+    container:
+      image: ubuntu:20.04
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Install system dependencies
+    - name: Set up environment
       run: |
-        sudo apt-get update
-        sudo apt-get install -y \
+        apt-get update
+        DEBIAN_FRONTEND=noninteractive apt-get install -y \
           unzip \
           openjdk-11-jdk \
           wget \
           libsecret-1-dev \
           libsoup2.4-1 \
-          libwebkit2gtk-4.1-0 \
-          libjavascriptcoregtk-4.1-0 \
-          xvfb
+          libwebkit2gtk-4.0-37 \
+          libjavascriptcoregtk-4.0-18 \
+          xvfb \
+          ca-certificates \
+          gnupg \
+          software-properties-common
 
-    - name: Remove libsoup3 and recover WebKit
-      run: |
-        # Remove conflicting libsoup3 and its dependents
-        sudo apt-get purge -y libsoup-3.0-0 libsoup-3.0-dev gir1.2-soup-3.0 gir1.2-webkit2-4.1 gstreamer1.0-plugins-good || true
-
-        # Reinstall runtime libraries only
-        sudo apt-get install -y libwebkit2gtk-4.1-0 libjavascriptcoregtk-4.1-0
-
-        # Create symbolic links for Garmin SDK Manager
-        if [ -f /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 ]; then
-          sudo ln -sf /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
-        fi
-
-        if [ -f /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.1.so.0 ]; then
-          sudo ln -sf /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so.18
-        fi
-
-        # Refresh dynamic linker cache
-        echo "/usr/lib/x86_64-linux-gnu" | sudo tee /etc/ld.so.conf.d/garmin.conf
-        sudo ldconfig
-
-    - name: Verify WebKit library paths
-      run: |
-        echo "Checking for libwebkit2gtk libraries..."
-        ls -l /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.* || echo "libwebkit2gtk not found"
-        echo "Checking for libjavascriptcoregtk libraries..."
-        ls -l /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.* || echo "libjavascriptcoregtk not found"
-        echo "Checking dynamic linker cache for libwebkit2gtk..."
-        ldconfig -p | grep libwebkit2gtk || echo "libwebkit2gtk not registered"
-        echo "Checking dynamic linker cache for libjavascriptcoregtk..."
-        ldconfig -p | grep libjavascriptcoregtk || echo "libjavascriptcoregtk not registered"
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
     - name: Download and extract Garmin SDK Manager
       run: |
