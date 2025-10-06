@@ -25,6 +25,7 @@ jobs:
           libsoup2.4-1 \
           libwebkit2gtk-4.0-37 \
           libjavascriptcoregtk-4.0-18 \
+          libcurl4 \
           xvfb \
           ca-certificates \
           gnupg \
