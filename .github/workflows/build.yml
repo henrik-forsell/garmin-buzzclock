@@ -23,27 +23,20 @@ jobs:
           wget \
           libsecret-1-dev \
           libsoup2.4-1 \
-          libwebkit2gtk-4.1-dev \
-          libjavascriptcoregtk-4.1-dev \
+          libwebkit2gtk-4.1-0 \
+          libjavascriptcoregtk-4.1-0 \
           xvfb
 
-    - name: Remove libsoup3 and recover WebKit
-      run: |
-        # Remove conflicting libsoup3
-        sudo apt-get remove -y libsoup-3.0-0 || true
+        # Remove libsoup3 and all packages that depend on it
+        sudo apt-get purge -y libsoup-3.0-0 libsoup-3.0-dev gir1.2-soup-3.0 gir1.2-webkit2-4.1 gstreamer1.0-plugins-good || true
 
-        # Reinstall WebKit after soup3 removal
-        sudo apt-get install -y libwebkit2gtk-4.1-dev
-
-        # Create symbolic links for Garmin SDK Manager
+        # Recreate symbolic links for Garmin SDK Manager
         if [ -f /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 ]; then
-          [ -e /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37 ] || \
-            sudo ln -s /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
+          sudo ln -sf /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
         fi
 
         if [ -f /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.1.so.0 ]; then
-          [ -e /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so.18 ] || \
-            sudo ln -s /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so.18
+          sudo ln -sf /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so.18
         fi
 
         # Refresh dynamic linker cache
