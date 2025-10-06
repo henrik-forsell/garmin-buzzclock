@@ -51,6 +51,17 @@ jobs:
         echo "/usr/lib/x86_64-linux-gnu" | sudo tee /etc/ld.so.conf.d/garmin.conf
         sudo ldconfig
 
+    - name: Verify WebKit library paths
+      run: |
+        echo "Checking for libwebkit2gtk libraries..."
+        ls -l /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.* || echo "libwebkit2gtk not found"
+        echo "Checking for libjavascriptcoregtk libraries..."
+        ls -l /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.* || echo "libjavascriptcoregtk not found"
+        echo "Checking dynamic linker cache for libwebkit2gtk..."
+        ldconfig -p | grep libwebkit2gtk || echo "libwebkit2gtk not registered"
+        echo "Checking dynamic linker cache for libjavascriptcoregtk..."
+        ldconfig -p | grep libjavascriptcoregtk || echo "libjavascriptcoregtk not registered"
+
     - name: Download and extract Garmin SDK Manager
       run: |
         wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip -O sdk-manager.zip
