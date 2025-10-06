@@ -44,12 +44,12 @@ jobs:
           exit 1
         fi
 
-        # Remove libsoup3 to prevent symbol conflict
-        sudo apt-get remove -y libsoup-3.0-0 || true
-
-        # Refresh dynamic linker cache
+        # Refresh dynamic linker cache BEFORE removing anything
         echo "/usr/lib/x86_64-linux-gnu" | sudo tee /etc/ld.so.conf.d/garmin.conf
         sudo ldconfig
+
+        # Now remove libsoup3 to prevent symbol conflict
+        sudo apt-get remove -y libsoup-3.0-0 || true
 
     - name: Verify WebKit library paths
       run: |
