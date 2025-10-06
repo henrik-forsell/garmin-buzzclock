@@ -42,7 +42,7 @@ jobs:
 
     - name: Install Connect IQ SDK using virtual display
       run: |
-        xvfb-run --auto-servernum sdk-manager/bin/sdkmanager --install latest
+        xvfb-run --auto-servernum sdk-manager/bin/sdkmanager --update
 
     - name: Confirm SDK installation
       run: |
