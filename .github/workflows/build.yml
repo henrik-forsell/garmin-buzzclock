@@ -27,16 +27,29 @@ jobs:
           libjavascriptcoregtk-4.1-dev \
           xvfb
 
-        # Create symlinks for Garmin SDK Manager
-        sudo ln -sf /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
-        sudo ln -sf /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so.18
+        # Create symlinks only if targets exist
+        if [ -f /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 ]; then
+          [ -e /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37 ] || \
+            sudo ln -s /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
+        else
+          echo "Missing libwebkit2gtk-4.1.so.0 — install failed"
+          exit 1
+        fi
 
-        # Ensure linker sees the new symlinks
-        echo "/usr/lib/x86_64-linux-gnu" | sudo tee /etc/ld.so.conf.d/garmin.conf
-        sudo ldconfig
+        if [ -f /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.1.so.0 ]; then
+          [ -e /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so.18 ] || \
+            sudo ln -s /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so.18
+        else
+          echo "Missing libjavascriptcoregtk-4.1.so.0 — install failed"
+          exit 1
+        fi
 
         # Remove libsoup3 to prevent symbol conflict
         sudo apt-get remove -y libsoup-3.0-0 || true
+
+        # Refresh dynamic linker cache
+        echo "/usr/lib/x86_64-linux-gnu" | sudo tee /etc/ld.so.conf.d/garmin.conf
+        sudo ldconfig
 
     - name: Download and extract Garmin SDK Manager
       run: |
@@ -47,6 +60,10 @@ jobs:
     - name: Install Connect IQ SDK using virtual display
       run: |
         xvfb-run --auto-servernum sdk-manager/bin/sdkmanager --install latest
+
+    - name: Confirm SDK installation
+      run: |
+        find sdk-manager -type d -name 'connectiq-sdk*' || (echo "SDK not installed" && exit 1)
 
     - name: Compile BuzzClock
       run: |
