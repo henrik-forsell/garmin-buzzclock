@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: blackshadev/garmin-connectiq-release-action:8.2.1-1
+      image: ghcr.io/blackshadev/garmin-connectiq-release-action:8.2.3-2
 
     steps:
     - name: Checkout repository
@@ -20,7 +20,7 @@ jobs:
     - name: Build BuzzClock
       run: |
         echo "${{ secrets.DEVELOPER_KEY_B64 }}" | base64 -d > developer_key.der
-        monkeyc \
+        /opt/connectiq/bin/monkeyc \
           -o BuzzClock.prg \
           -m manifest.xml \
           -y developer_key.der \
