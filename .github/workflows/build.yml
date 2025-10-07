@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: ghcr.io/blackshadev/garmin-connectiq-release-action:8.2.3-2
+      image: ghcr.io/blackshadev/garmin-connectiq-release-action:8.2.3
 
     steps:
     - name: Checkout repository
