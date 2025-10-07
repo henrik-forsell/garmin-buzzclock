@@ -1,4 +1,4 @@
-name: Build BuzzClock (Docker)
+name: Build BuzzClock
 
 on:
   push:
@@ -11,49 +11,16 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: ubuntu:20.04
+      image: blackshadev/garmin-connectiq-release-action:8.2.1-1
 
     steps:
-    - name: Set up environment
-      run: |
-        apt-get update
-        DEBIAN_FRONTEND=noninteractive apt-get install -y \
-          unzip \
-          openjdk-11-jdk \
-          wget \
-          libsecret-1-dev \
-          libsoup2.4-1 \
-          libwebkit2gtk-4.0-37 \
-          libjavascriptcoregtk-4.0-18 \
-          libcurl4 \
-          xvfb \
-          ca-certificates \
-          gnupg \
-          software-properties-common
-
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Download and extract Garmin SDK Manager
+    - name: Build BuzzClock
       run: |
-        wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip -O sdk-manager.zip
-        unzip sdk-manager.zip -d sdk-manager
-        chmod +x sdk-manager/bin/sdkmanager
-
-    - name: Install Connect IQ SDK using virtual display
-      run: |
-        xvfb-run --auto-servernum sdk-manager/bin/sdkmanager --update
-
-    - name: Confirm SDK installation
-      run: |
-        find sdk-manager -type d -name 'connectiq-sdk*' || (echo "SDK not installed" && exit 1)
-
-    - name: Compile BuzzClock
-      run: |
-        SDK_PATH=$(find sdk-manager -type d -name 'connectiq-sdk*' | head -n 1)
-        MONKEYC=$(find "$SDK_PATH" -type f -name monkeyc | head -n 1)
         echo "${{ secrets.DEVELOPER_KEY_B64 }}" | base64 -d > developer_key.der
-        "$MONKEYC" \
+        monkeyc \
           -o BuzzClock.prg \
           -m manifest.xml \
           -y developer_key.der \
