@@ -1,10 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<application xmlns="http://www.garmin.com/xml/connectiq" >
-    <id>com.example.buzzclock</id>
-    <name>BuzzClock</name>
-    <type>watchface</type>
-    <version>1.0.0</version>
-    <languages>
-        <language>en</language>
-    </languages>
+<application xmlns="http://www.garmin.com/xml/connectiq">
+  <name>BuzzClock</name>
+  <version>1.0.0</version>
+  <description>A simple vibration-based clock</description>
+  <permissions>
+    <uses-permission>System</uses-permission>
+  </permissions>
+  <products>
+    <product id="fenix6" />
+  </products>
 </application>
