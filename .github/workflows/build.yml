@@ -17,17 +17,15 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Install SDK Manager and latest SDK using virtual display
+    - name: Install CLI SDK Manager and latest SDK
       run: |
         apt-get update
-        apt-get install -y unzip wget openjdk-11-jre libcurl4 xvfb
-        wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip
-        unzip connectiq-sdk-manager-linux.zip -d sdk-manager
-        chmod +x sdk-manager/bin/sdkmanager
-        xvfb-run --auto-servernum sdk-manager/bin/sdkmanager --install latest
-        echo "PATH=$PATH:/root/.Garmin/ConnectIQ/Sdks/latest/bin" >> $GITHUB_ENV
-        
-    - name: Build BuzzClock
+        apt-get install -y curl unzip wget openjdk-11-jre libcurl4
+        curl -sSf https://raw.githubusercontent.com/lindell/connect-iq-sdk-manager-cli/master/install.sh | sh
+        connect-iq-sdk-manager-cli install --latest
+        echo "PATH=$PATH:$HOME/.Garmin/ConnectIQ/Sdks/latest/bin" >> $GITHUB_ENV
+
+  - name: Build BuzzClock
       run: |
         echo "${{ secrets.GARMIN_DEVELOPER_KEY }}" | base64 -d > developer_key.der
         monkeyc \
