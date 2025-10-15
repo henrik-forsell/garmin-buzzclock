@@ -17,13 +17,13 @@ jobs:
         password: ${{ secrets.GHCR_PAT }}
 
     steps:
-    - name: Checkout repository
+    - name: Checkout code
       uses: actions/checkout@v3
 
     - name: Build BuzzClock
       run: |
         echo "${{ secrets.DEVELOPER_KEY_B64 }}" | base64 -d > developer_key.der
-        /opt/connectiq/bin/monkeyc \
+        monkeyc \
           -o BuzzClock.prg \
           -m manifest.xml \
           -y developer_key.der \
