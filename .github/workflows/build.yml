@@ -17,11 +17,13 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Install CLI SDK Manager and latest SDK
+    - name: Install CLI SDK Manager and latest SDK (no sudo)
       run: |
         apt-get update
         apt-get install -y curl unzip wget openjdk-11-jre libcurl4
-        curl -sSf https://raw.githubusercontent.com/lindell/connect-iq-sdk-manager-cli/master/install.sh | sh
+        curl -sSf https://raw.githubusercontent.com/lindell/connect-iq-sdk-manager-cli/master/install.sh -o install.sh
+        sed -i 's/sudo //g' install.sh
+        bash install.sh
         connect-iq-sdk-manager-cli install --latest
         echo "PATH=$PATH:$HOME/.Garmin/ConnectIQ/Sdks/latest/bin" >> $GITHUB_ENV
 
