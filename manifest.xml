@@ -6,6 +6,6 @@
     <uses-permission>System</uses-permission>
   </permissions>
   <products>
-    <product id="fenix6" />
+    <product id="generic" />
   </products>
 </application>
