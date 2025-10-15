@@ -20,7 +20,7 @@ jobs:
     - name: Install SDK Manager and latest SDK
       run: |
         apt-get update
-        apt-get install -y unzip wget openjdk-11-jre
+        apt-get install -y unzip wget openjdk-11-jre libcurl4
         wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip
         unzip connectiq-sdk-manager-linux.zip -d sdk-manager
         chmod +x sdk-manager/bin/sdkmanager
