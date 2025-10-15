@@ -17,6 +17,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    - name: Show manifest.xml content
+      run: cat manifest.xml
+      
     - name: Build BuzzClock
       run: |
         echo "${{ secrets.GARMIN_DEVELOPER_KEY }}" | base64 -d > developer_key.der
