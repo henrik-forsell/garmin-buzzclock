@@ -11,7 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: ghcr.io/blackshadev/garmin-connectiq-release-action:latest
+      image: blackshadev/garmin-connectiq-release-action:8.2.3
+      credentials:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     steps:
     - name: Checkout repository
