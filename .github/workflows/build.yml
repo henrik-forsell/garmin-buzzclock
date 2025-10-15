@@ -17,14 +17,14 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Install CLI SDK Manager and latest SDK (no sudo)
+    - name: Install CLI SDK Manager and latest SDK
       run: |
         apt-get update
         apt-get install -y curl unzip wget openjdk-11-jre libcurl4
         curl -sSf https://raw.githubusercontent.com/lindell/connect-iq-sdk-manager-cli/master/install.sh -o install.sh
         sed -i 's/sudo //g' install.sh
         bash install.sh
-        connect-iq-sdk-manager-cli install --latest
+        connect-iq-sdk-manager install --latest
         echo "PATH=$PATH:$HOME/.Garmin/ConnectIQ/Sdks/latest/bin" >> $GITHUB_ENV
 
     - name: Build BuzzClock
