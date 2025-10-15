@@ -10,12 +10,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    container:
+      image: ghcr.io/blackshadev/garmin-connectiq-release-action:8.2.1-1
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GHCR_PAT }}
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Build with Connect IQ SDK
-      uses: blackshadev/garmin-connectiq-release-action@8.2.3
-      with:
-        developer_key: ${{ secrets.DEVELOPER_KEY_B64 }}
-        output: BuzzClock.prg
+    - name: Build BuzzClock
+      run: |
+        echo "${{ secrets.DEVELOPER_KEY_B64 }}" | base64 -d > developer_key.der
+        /opt/connectiq/bin/monkeyc \
+          -o BuzzClock.prg \
+          -m manifest.xml \
+          -y developer_key.der \
+          -z resources \
+          -w source
