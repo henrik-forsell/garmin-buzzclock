@@ -24,7 +24,7 @@ jobs:
         curl -sSf https://raw.githubusercontent.com/lindell/connect-iq-sdk-manager-cli/master/install.sh -o install.sh
         sed -i 's/sudo //g' install.sh
         bash install.sh
-        connect-iq-sdk-manager sdk install --latest
+        connect-iq-sdk-manager sdk install
         echo "PATH=$PATH:$HOME/.Garmin/ConnectIQ/Sdks/latest/bin" >> $GITHUB_ENV
 
     - name: Build BuzzClock
