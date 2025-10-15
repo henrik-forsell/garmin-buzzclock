@@ -11,16 +11,22 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: ghcr.io/matco/connectiq-sdk:latest
+      image: ghcr.io/matco/connectiq-tester:latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-    - name: Show current working directory
-      run: pwd
-    - name: Show manifest.xml content
-      run: cat manifest.xml
-      
+
+    - name: Install SDK Manager and latest SDK
+      run: |
+        apt-get update
+        apt-get install -y unzip wget openjdk-11-jre
+        wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip
+        unzip connectiq-sdk-manager-linux.zip -d sdk-manager
+        chmod +x sdk-manager/ConnectIQ-SDK-Manager
+        sdk-manager/ConnectIQ-SDK-Manager --install latest
+        echo "PATH=$PATH:/root/.Garmin/ConnectIQ/Sdks/latest/bin" >> $GITHUB_ENV
+
     - name: Build BuzzClock
       run: |
         echo "${{ secrets.GARMIN_DEVELOPER_KEY }}" | base64 -d > developer_key.der
