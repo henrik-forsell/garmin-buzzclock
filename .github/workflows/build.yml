@@ -24,7 +24,7 @@ jobs:
         wget https://developer.garmin.com/downloads/connect-iq/sdk-manager/connectiq-sdk-manager-linux.zip
         unzip connectiq-sdk-manager-linux.zip -d sdk-manager
         chmod +x sdk-manager/bin/sdkmanager
-        sdk-manager/bin/sdkmanager --install latest
+        sdk-manager/bin/sdkmanager --cli --install latest
         echo "PATH=$PATH:/root/.Garmin/ConnectIQ/Sdks/latest/bin" >> $GITHUB_ENV
         
     - name: Build BuzzClock
