@@ -19,7 +19,7 @@ jobs:
 
     - name: Build BuzzClock
       run: |
-        echo "${{ secrets.DEVELOPER_KEY_B64 }}" | base64 -d > developer_key.der
+        echo "${{ secrets.GARMIN_DEVELOPER_KEY }}" | base64 -d > developer_key.der
         monkeyc \
           -o BuzzClock.prg \
           -m manifest.xml \
