@@ -32,5 +32,4 @@ jobs:
           -m manifest.xml \
           -y developer_key.der \
           -z resources \
-          -w source \
-          --no-schema-validation
+          -w source
