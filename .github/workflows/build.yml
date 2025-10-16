@@ -17,17 +17,10 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Activate SDK
-      run: |
-        sdkmanager use 8.2.3
-        echo "PATH=/opt/connectiq-sdk/bin:$PATH" >> $GITHUB_ENV
-
     - name: Build BuzzClock
       run: |
         echo "${{ secrets.GARMIN_DEVELOPER_KEY }}" | base64 -d > developer_key.der
         monkeyc \
+          -f BuzzClock.jungle \
           -o BuzzClock.prg \
-          -m manifest.xml \
-          -y developer_key.der \
-          -z resources \
-          -w source
+          -y developer_key.der
