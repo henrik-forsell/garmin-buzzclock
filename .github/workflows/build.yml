@@ -17,9 +17,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Set SDK path
+    - name: Activate SDK
       run: |
-        echo "CIQ_HOME=/opt/connectiq-sdk" >> $GITHUB_ENV
+        sdkmanager use 8.2.3
         echo "PATH=/opt/connectiq-sdk/bin:$PATH" >> $GITHUB_ENV
 
     - name: Build BuzzClock
