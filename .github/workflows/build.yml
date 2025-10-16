@@ -17,12 +17,10 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Verify monkeyc and SDK
+    - name: Set SDK path
       run: |
-        monkeyc --version
-        echo "SDK path: $CIQ_HOME"
-        echo "Listing SDK contents:"
-        ls -l $CIQ_HOME
+        echo "CIQ_HOME=/opt/connectiq-sdk" >> $GITHUB_ENV
+        echo "PATH=/opt/connectiq-sdk/bin:$PATH" >> $GITHUB_ENV
 
     - name: Build BuzzClock
       run: |
