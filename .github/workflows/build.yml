@@ -32,7 +32,7 @@ jobs:
         AGREEMENT_HASH: ${{ secrets.GARMIN_AGREEMENT_HASH }}
       run: |
         connect-iq-sdk-manager agreement accept --agreement-hash $AGREEMENT_HASH
-        connect-iq-sdk-manager login
+        # connect-iq-sdk-manager login
 
     - name: Install SDK and set active version
       run: |
