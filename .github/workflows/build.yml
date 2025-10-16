@@ -17,32 +17,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Install CLI SDK Manager (no sudo)
-      run: |
-        apt-get update
-        apt-get install -y curl unzip wget openjdk-11-jre libcurl4
-        curl -sSf https://raw.githubusercontent.com/lindell/connect-iq-sdk-manager-cli/master/install.sh -o install.sh
-        sed -i 's/sudo //g' install.sh
-        bash install.sh
-
-    - name: Accept SDK Agreement and Login
-      env:
-        GARMIN_USERNAME: ${{ secrets.GARMIN_USERNAME }}
-        GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
-        AGREEMENT_HASH: ${{ secrets.GARMIN_AGREEMENT_HASH }}
-      run: |
-        connect-iq-sdk-manager agreement accept --agreement-hash $AGREEMENT_HASH
-        # connect-iq-sdk-manager login
-
-    - name: Install SDK and set active version
-      run: |
-        connect-iq-sdk-manager sdk set 8.2.3
-        echo "PATH=$(connect-iq-sdk-manager sdk current-path --bin):$PATH" >> $GITHUB_ENV
-
-    - name: Download device profiles
-      run: |
-        connect-iq-sdk-manager device download --manifest=manifest.xml
-
     - name: Build BuzzClock
       run: |
         echo "${{ secrets.GARMIN_DEVELOPER_KEY }}" | base64 -d > developer_key.der
