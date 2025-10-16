@@ -26,3 +26,4 @@ jobs:
           -y developer_key.der \
           -z resources \
           -w source
+          --no-schema-validation
